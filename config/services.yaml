@@ -1,0 +1,49 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+
+  elenyum_maker:
+    public: true
+    class: 'Elenyum\Maker\Controller\MakeController'
+
+#  # makes classes in src/ available to be used as services
+#  # this creates a service per class whose id is the fully-qualified class name
+  Elenyum\Maker\:
+    resource: '../src/'
+    exclude:
+      - '../src/DependencyInjection/'
+      - '../src/ElenyumMakerBundle.php'
+
+  Elenyum\Maker\Service\Module\Entity\ServiceAddProperty:
+    tags:
+         - {name: 'elenyum.make.entity.create', priority: 100}
+
+  Elenyum\Maker\Service\Module\Entity\ServiceAddValidator:
+    tags:
+         - {name: 'elenyum.make.entity.create', priority: 90}
+
+  Elenyum\Maker\Service\Module\Entity\ServiceAddGroup:
+    tags:
+         - { name: 'elenyum.make.entity.create', priority: 80 }
+
+  Elenyum\Maker\Service\Module\Handler\ServiceCreateEntityHandler:
+    tags: ['elenyum.make.handler.creator']
+    arguments:
+      $propertyServices: !tagged_iterator elenyum.make.entity.create
+#     @see ../src/DependencyInjection/ElenyumMakerExtension.php:19
+      $options: '%elenyum_maker.config%'
+
+  Elenyum\Maker\Service\Module\Handler\ServiceCreateControllerHandler:
+    tags: ['elenyum.make.handler.creator']
+    arguments:
+      $options: '%elenyum_maker.config%'
+
+  Elenyum\Maker\Service\Module\Handler\ServiceCreateServiceHandler:
+    tags: ['elenyum.make.handler.creator']
+    arguments:
+      $options: '%elenyum_maker.config%'
+
+  Elenyum\Maker\Service\Module\ServiceMakeModule:
+    arguments:
+      $create: !tagged_iterator elenyum.make.handler.creator

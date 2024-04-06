@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- http://phpunit.de/manual/4.1/en/appendixes.configuration.html -->
+<phpunit bootstrap="vendor/autoload.php"
+         backupGlobals="false"
+         colors="true"
+         processIsolation="false"
+         stopOnFailure="false">
+    <php>
+        <env name="SHELL_VERBOSITY" value="-1"/>
+        <ini name="memory_limit" value="512M"/>
+<!--        <ini name="error_reporting" value="1"/>-->
+        <ini name="display_errors" value="On"/>
+        <ini name="display_startup_errors" value="On"/>
+    </php>
+    <testsuites>
+        <testsuite name="Project Test Suite">
+            <directory>tests</directory>
+        </testsuite>
+    </testsuites>
+    <source>
+        <include>
+            <directory suffix=".php">src</directory>
+        </include>
+    </source>
+    <coverage cacheDirectory=".phpunit.cache/code-coverage">
+        <include>
+            <directory suffix=".php">src</directory>
+        </include>
+
+        <report>
+            <html outputDirectory="./coverage"/>
+            <!-- Если вам нужны другие форматы отчетов, вы можете добавить их здесь, например, clover или xml -->
+        </report>
+    </coverage>
+</phpunit>

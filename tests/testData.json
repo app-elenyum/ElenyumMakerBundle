@@ -1,0 +1,847 @@
+[
+  {
+    "name": "Shop",
+    "version": {
+      "v1.0": {
+        "entity": [
+          {
+            "name": "Order",
+            "isEndpoint": true,
+            "group": [
+              "admin",
+              "manager",
+              "user"
+            ],
+            "validator": {
+              "Cascade": null
+            },
+            "column": [
+              {
+                "name": "id",
+                "info": {
+                  "type": "string",
+                  "targetEntity": null,
+                  "mappedBy": null,
+                  "generatedId": null
+                },
+                "validator": {
+                  "NotNull": null,
+                  "Length": {
+                    "min": 10,
+                    "max": 100
+                  }
+                },
+                "group": {
+                  "GET": [
+                    "user",
+                    "admin",
+                    "manager"
+                  ],
+                  "POST": [
+                    "admin",
+                    "manager"
+                  ],
+                  "PUT": [],
+                  "DELETE": [
+                    "admin"
+                  ]
+                }
+              },
+              {
+                "name": "name",
+                "info": {
+                  "type": "string"
+                },
+                "validator": {
+                  "NotNull": null,
+                  "Length": {
+                    "min": 23,
+                    "max": 55
+                  }
+                },
+                "group": {
+                  "GET": [
+                    "user",
+                    "manager"
+                  ],
+                  "POST": [
+                    "manager"
+                  ],
+                  "PUT": [
+                    "admin"
+                  ]
+                }
+              }
+            ],
+            "updatedAt": "06.04.2024, 14:57:32"
+          },
+          {
+            "name": "Item",
+            "isEndpoint": false,
+            "group": [
+              "manager",
+              "user"
+            ],
+            "validator": {
+              "Cascade": null
+            },
+            "column": [
+              {
+                "name": "id",
+                "info": {
+                  "type": "string"
+                },
+                "validator": {
+                  "NotNull": null
+                },
+                "group": {
+                  "GET": [
+                    "user",
+                    "manager"
+                  ],
+                  "POST": [
+                    "user",
+                    "manager"
+                  ],
+                  "PUT": [
+                    "user",
+                    "manager"
+                  ],
+                  "DELETE": [
+                    "user",
+                    "manager"
+                  ]
+                }
+              },
+              {
+                "name": "name",
+                "info": {
+                  "type": "string"
+                },
+                "validator": {
+                  "NotNull": null
+                },
+                "group": {
+                  "GET": [
+                    "user",
+                    "manager"
+                  ],
+                  "POST": [
+                    "user",
+                    "manager"
+                  ],
+                  "PUT": [
+                    "user",
+                    "manager"
+                  ],
+                  "DELETE": [
+                    "user",
+                    "manager"
+                  ]
+                }
+              }
+            ],
+            "updatedAt": "06.04.2024, 00:27:37"
+          },
+          {
+            "name": "Card",
+            "isEndpoint": true,
+            "group": [
+              "admin",
+              "manager",
+              "user"
+            ],
+            "validator": {
+              "Cascade": null
+            },
+            "column": [
+              {
+                "name": "id",
+                "info": {
+                  "type": "string"
+                },
+                "validator": {
+                  "NotNull": null
+                },
+                "group": {
+                  "GET": [
+                    "user",
+                    "admin",
+                    "manager"
+                  ],
+                  "POST": [
+                    "admin",
+                    "manager"
+                  ],
+                  "PUT": [
+                    "admin"
+                  ],
+                  "DELETE": [
+                    "admin"
+                  ]
+                }
+              },
+              {
+                "name": "name",
+                "info": {
+                  "type": "string"
+                },
+                "validator": {
+                  "NotNull": null,
+                  "Length": {
+                    "min": 23,
+                    "max": 55
+                  }
+                },
+                "group": {
+                  "GET": [
+                    "user",
+                    "manager"
+                  ],
+                  "POST": [
+                    "manager"
+                  ],
+                  "PUT": [
+                    "admin"
+                  ],
+                  "DELETE": [
+                    "admin"
+                  ]
+                }
+              }
+            ],
+            "updatedAt": "06.04.2024, 00:27:37"
+          }
+        ]
+      },
+      "v1.1": {
+        "entity": [
+          {
+            "name": "Order",
+            "isEndpoint": true,
+            "group": [
+              "admin",
+              "manager",
+              "user"
+            ],
+            "validator": {
+              "Cascade": null
+            },
+            "column": [
+              {
+                "name": "id",
+                "info": {
+                  "type": "string"
+                },
+                "validator": {
+                  "NotNull": null
+                },
+                "group": {
+                  "GET": [
+                    "user",
+                    "admin",
+                    "manager"
+                  ],
+                  "POST": [
+                    "admin",
+                    "manager"
+                  ],
+                  "PUT": [],
+                  "DELETE": [
+                    "admin"
+                  ]
+                }
+              },
+              {
+                "name": "name",
+                "info": {
+                  "type": "string"
+                },
+                "validator": {
+                  "NotNull": null,
+                  "Length": {
+                    "min": 23,
+                    "max": 55
+                  }
+                },
+                "group": {
+                  "GET": [
+                    "user",
+                    "manager"
+                  ],
+                  "POST": [
+                    "manager"
+                  ],
+                  "PUT": [
+                    "admin"
+                  ]
+                }
+              }
+            ],
+            "updatedAt": "06.04.2024, 00:27:37"
+          },
+          {
+            "name": "Item",
+            "isEndpoint": false,
+            "group": [
+              "manager",
+              "user"
+            ],
+            "validator": {
+              "Cascade": null
+            },
+            "column": [
+              {
+                "name": "id",
+                "info": {
+                  "type": "string"
+                },
+                "validator": {
+                  "NotNull": null
+                },
+                "group": {
+                  "GET": [
+                    "user",
+                    "manager"
+                  ],
+                  "POST": [
+                    "user",
+                    "manager"
+                  ],
+                  "PUT": [
+                    "user",
+                    "manager"
+                  ],
+                  "DELETE": [
+                    "user",
+                    "manager"
+                  ]
+                }
+              },
+              {
+                "name": "name",
+                "info": {
+                  "type": "string"
+                },
+                "validator": {
+                  "NotNull": null
+                },
+                "group": {
+                  "GET": [
+                    "user",
+                    "manager"
+                  ],
+                  "POST": [
+                    "user",
+                    "manager"
+                  ],
+                  "PUT": [
+                    "user",
+                    "manager"
+                  ],
+                  "DELETE": [
+                    "user",
+                    "manager"
+                  ]
+                }
+              }
+            ],
+            "updatedAt": "06.04.2024, 00:27:37"
+          },
+          {
+            "name": "Card",
+            "isEndpoint": true,
+            "group": [
+              "admin",
+              "manager",
+              "user"
+            ],
+            "validator": {
+              "Cascade": null
+            },
+            "column": [
+              {
+                "name": "id",
+                "info": {
+                  "type": "string"
+                },
+                "validator": {
+                  "NotNull": null
+                },
+                "group": {
+                  "GET": [
+                    "user",
+                    "admin",
+                    "manager"
+                  ],
+                  "POST": [
+                    "admin",
+                    "manager"
+                  ],
+                  "PUT": [
+                    "admin"
+                  ],
+                  "DELETE": [
+                    "admin"
+                  ]
+                }
+              },
+              {
+                "name": "name",
+                "info": {
+                  "type": "string"
+                },
+                "validator": {
+                  "NotNull": null,
+                  "Length": {
+                    "min": 23,
+                    "max": 55
+                  }
+                },
+                "group": {
+                  "GET": [
+                    "user",
+                    "manager"
+                  ],
+                  "POST": [
+                    "manager"
+                  ],
+                  "PUT": [
+                    "admin"
+                  ],
+                  "DELETE": [
+                    "admin"
+                  ]
+                }
+              }
+            ],
+            "updatedAt": "06.04.2024, 00:27:37"
+          }
+        ]
+      },
+      "v1.2": {
+        "entity": [
+          {
+            "name": "Order2",
+            "isEndpoint": true,
+            "group": [
+              "admin",
+              "manager",
+              "user"
+            ],
+            "validator": {
+              "Cascade": null
+            },
+            "column": [
+              {
+                "name": "id",
+                "info": {
+                  "type": "string",
+                  "targetEntity": null,
+                  "mappedBy": null,
+                  "generatedId": null
+                },
+                "validator": {
+                  "NotNull": null,
+                  "Length": {
+                    "min": 10,
+                    "max": 100
+                  }
+                },
+                "group": {
+                  "GET": [
+                    "user",
+                    "admin",
+                    "manager"
+                  ],
+                  "POST": [
+                    "admin",
+                    "manager"
+                  ],
+                  "PUT": [],
+                  "DELETE": [
+                    "admin"
+                  ]
+                }
+              },
+              {
+                "name": "name",
+                "info": {
+                  "type": "string"
+                },
+                "validator": {
+                  "NotNull": null,
+                  "Length": {
+                    "min": 23,
+                    "max": 55
+                  }
+                },
+                "group": {
+                  "GET": [
+                    "user",
+                    "manager"
+                  ],
+                  "POST": [
+                    "manager"
+                  ],
+                  "PUT": [
+                    "admin"
+                  ]
+                }
+              }
+            ],
+            "updatedAt": "06.04.2024, 14:57:00"
+          },
+          {
+            "name": "Item",
+            "isEndpoint": false,
+            "group": [
+              "manager",
+              "user"
+            ],
+            "validator": {
+              "Cascade": null
+            },
+            "column": [
+              {
+                "name": "id",
+                "info": {
+                  "type": "string"
+                },
+                "validator": {
+                  "NotNull": null
+                },
+                "group": {
+                  "GET": [
+                    "user",
+                    "manager"
+                  ],
+                  "POST": [
+                    "user",
+                    "manager"
+                  ],
+                  "PUT": [
+                    "user",
+                    "manager"
+                  ],
+                  "DELETE": [
+                    "user",
+                    "manager"
+                  ]
+                }
+              },
+              {
+                "name": "name",
+                "info": {
+                  "type": "string"
+                },
+                "validator": {
+                  "NotNull": null
+                },
+                "group": {
+                  "GET": [
+                    "user",
+                    "manager"
+                  ],
+                  "POST": [
+                    "user",
+                    "manager"
+                  ],
+                  "PUT": [
+                    "user",
+                    "manager"
+                  ],
+                  "DELETE": [
+                    "user",
+                    "manager"
+                  ]
+                }
+              }
+            ],
+            "updatedAt": "06.04.2024, 00:27:37"
+          },
+          {
+            "name": "Card",
+            "isEndpoint": true,
+            "group": [
+              "admin",
+              "manager",
+              "user"
+            ],
+            "validator": {
+              "Cascade": null
+            },
+            "column": [
+              {
+                "name": "id",
+                "info": {
+                  "type": "string"
+                },
+                "validator": {
+                  "NotNull": null
+                },
+                "group": {
+                  "GET": [
+                    "user",
+                    "admin",
+                    "manager"
+                  ],
+                  "POST": [
+                    "admin",
+                    "manager"
+                  ],
+                  "PUT": [
+                    "admin"
+                  ],
+                  "DELETE": [
+                    "admin"
+                  ]
+                }
+              },
+              {
+                "name": "name",
+                "info": {
+                  "type": "string"
+                },
+                "validator": {
+                  "NotNull": null,
+                  "Length": {
+                    "min": 23,
+                    "max": 55
+                  }
+                },
+                "group": {
+                  "GET": [
+                    "user",
+                    "manager"
+                  ],
+                  "POST": [
+                    "manager"
+                  ],
+                  "PUT": [
+                    "admin"
+                  ],
+                  "DELETE": [
+                    "admin"
+                  ]
+                }
+              }
+            ],
+            "updatedAt": "06.04.2024, 00:27:37"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "name": "Dragon",
+    "version": {
+      "v1.0": {
+        "entity": [
+          {
+            "name": "Boss",
+            "isEndpoint": true,
+            "group": [
+              "manager",
+              "user"
+            ],
+            "validator": {
+              "Cascade": null
+            },
+            "column": [
+              {
+                "name": "id",
+                "info": {
+                  "type": "string"
+                },
+                "validator": {
+                  "NotNull": null
+                },
+                "group": {
+                  "GET": [
+                    "user",
+                    "manager"
+                  ],
+                  "POST": [
+                    "user",
+                    "manager"
+                  ],
+                  "PUT": [
+                    "user",
+                    "manager"
+                  ],
+                  "DELETE": [
+                    "user",
+                    "manager"
+                  ]
+                }
+              },
+              {
+                "name": "name",
+                "info": {
+                  "type": "string"
+                },
+                "validator": {},
+                "group": {
+                  "GET": [
+                    "user",
+                    "manager"
+                  ],
+                  "POST": [
+                    "user",
+                    "manager"
+                  ],
+                  "PUT": [
+                    "user",
+                    "manager"
+                  ],
+                  "DELETE": [
+                    "user",
+                    "manager"
+                  ]
+                }
+              }
+            ],
+            "updatedAt": "06.04.2024, 00:27:37"
+          },
+          {
+            "name": "Foo",
+            "isEndpoint": false,
+            "group": [
+              "manager",
+              "user"
+            ],
+            "validator": {
+              "Cascade": null
+            },
+            "column": [
+              {
+                "name": "id",
+                "info": {
+                  "type": "string"
+                },
+                "validator": {
+                  "NotNull": null
+                },
+                "group": {
+                  "GET": [
+                    "user",
+                    "manager"
+                  ],
+                  "POST": [
+                    "user",
+                    "manager"
+                  ],
+                  "PUT": [
+                    "user",
+                    "manager"
+                  ],
+                  "DELETE": [
+                    "user",
+                    "manager"
+                  ]
+                }
+              },
+              {
+                "name": "name",
+                "info": {
+                  "type": "string"
+                },
+                "validator": {},
+                "group": {
+                  "GET": [
+                    "user",
+                    "manager"
+                  ],
+                  "POST": [
+                    "user",
+                    "manager"
+                  ],
+                  "PUT": [
+                    "user",
+                    "manager"
+                  ],
+                  "DELETE": [
+                    "user",
+                    "manager"
+                  ]
+                }
+              }
+            ],
+            "updatedAt": "06.04.2024, 00:27:37"
+          }
+        ]
+      },
+      "v1.1": {
+        "entity": [
+          {
+            "name": "Foo",
+            "isEndpoint": false,
+            "group": [
+              "manager",
+              "user"
+            ],
+            "validator": {
+              "Cascade": null
+            },
+            "column": [
+              {
+                "name": "id",
+                "info": {
+                  "type": "string"
+                },
+                "validator": {
+                  "NotNull": null
+                },
+                "group": {
+                  "GET": [
+                    "user",
+                    "manager"
+                  ],
+                  "POST": [
+                    "user",
+                    "manager"
+                  ],
+                  "PUT": [
+                    "user",
+                    "manager"
+                  ],
+                  "DELETE": [
+                    "user",
+                    "manager"
+                  ]
+                }
+              },
+              {
+                "name": "name",
+                "info": {
+                  "type": "string"
+                },
+                "validator": {},
+                "group": {
+                  "GET": [
+                    "user",
+                    "manager"
+                  ],
+                  "POST": [
+                    "user",
+                    "manager"
+                  ],
+                  "PUT": [
+                    "user",
+                    "manager"
+                  ],
+                  "DELETE": [
+                    "user",
+                    "manager"
+                  ]
+                }
+              }
+            ],
+            "updatedAt": "06.04.2024, 00:27:37"
+          }
+        ]
+      }
+    }
+  }
+]
