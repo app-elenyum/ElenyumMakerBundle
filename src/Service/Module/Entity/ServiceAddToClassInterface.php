@@ -4,12 +4,12 @@ namespace Elenyum\Maker\Service\Module\Entity;
 
 use Nette\PhpGenerator\ClassType;
 
-interface ServiceAddToClass
+interface ServiceAddToClassInterface
 {
     /**
      * @param ClassType $class
-     * @param array $dataColumn
+     * @param array $data
      * @return ClassType
      */
-    public function create(ClassType $class, array $dataColumn): ClassType;
+    public function create(ClassType $class, array $data): ClassType;
 }

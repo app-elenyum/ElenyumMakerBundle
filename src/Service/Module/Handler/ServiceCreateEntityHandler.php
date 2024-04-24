@@ -3,6 +3,7 @@
 namespace Elenyum\Maker\Service\Module\Handler;
 
 use Countable;
+use Elenyum\Maker\Service\Module\Entity\SetFullNamespaceInterface;
 use Nette\PhpGenerator\PhpNamespace;
 use Nette\PhpGenerator\Printer;
 use Symfony\Component\Filesystem\Filesystem;
@@ -12,8 +13,8 @@ class ServiceCreateEntityHandler implements ServiceCreateInterface
 {
     public function __construct(
         readonly private Filesystem $filesystem,
-        /** @var \Elenyum\Maker\Service\Module\Entity\ServiceAddToClass[] $propertyServices */
-        readonly private Countable $propertyServices,
+        /** @var \Elenyum\Maker\Service\Module\Entity\ServiceAddToClassInterface[] $entityServices */
+        readonly private Countable $entityServices,
         readonly private array $options
     ) {}
 
@@ -40,9 +41,9 @@ class ServiceCreateEntityHandler implements ServiceCreateInterface
             $this->createEntity($namespace, $data)
         );
 
-        $version = strtoupper(str_replace('.', '_', $data['version']));
-        $nameEntity = ucfirst($data['entity_name']);
-        $moduleName = ucfirst($data['module_name']);
+        $version = $data['version_namespace'];
+        $nameEntity = $data['entity_name'];
+        $moduleName = $data['module_name'];
         $dirEntityFile = $path.'/'.$moduleName.'/'.$version.'/Entity/'.$nameEntity.'.php';
 
         $operation = 'created';
@@ -59,15 +60,17 @@ class ServiceCreateEntityHandler implements ServiceCreateInterface
         ]];
     }
 
-    private function createEntity(string $namespace, array $data): PhpNamespace
+    private function createEntity(string $baseNamespace, array $data): PhpNamespace
     {
-        $version = strtoupper(str_replace('.', '_', $data['version']));
+        $version = str_replace('.', '_', $data['version']);
         $nameEntity = ucfirst($data['entity_name']);
         $moduleName = ucfirst($data['module_name']);
-        $rootNamespace = ucfirst($namespace);
+        $rootNamespace = ucfirst($baseNamespace);
 
-        $fullNamespace = $rootNamespace.'\\'.$moduleName.'\\'.$version.'\\Entity';
+        $fullNamespace = $rootNamespace.'\\'.$moduleName.'\\'.ucfirst($version).'\\Entity';
 
+        $columnData = $data['column'];
+        /** added full name */
         $namespace = new PhpNamespace($fullNamespace);
         $namespace->addUse('Doctrine\ORM\Mapping', 'ORM');
         $namespace->addUse('Symfony\Component\Serializer\Annotation\Groups');
@@ -75,17 +78,22 @@ class ServiceCreateEntityHandler implements ServiceCreateInterface
         $namespace->addUse('Doctrine\Common\Collections\Collection');
 
         $class = $namespace->addClass($nameEntity);
-//        $class->setExtends('BaseEntity');
 
-        $class->addAttribute('ORM\Table', ['name' => $this->prepareTableName($nameEntity)]);
-
-        /** @var \Elenyum\Maker\Service\Module\Entity\ServiceAddToClass $service */
-        foreach ($this->propertyServices as $service) {
-            $service->create($class, $data['column']);
+        $class->addAttribute('ORM\Table', ['name' => $this->prepareTableName($moduleName, $nameEntity, $version)]);
+        $class->addAttribute('ORM\Entity');
+        foreach ($data['validator'] as $validator => $validatorParams) {
+            $class->addAttribute('Assert\\' . $validator, $validatorParams ?? []);
         }
 
-//        dd($this->printNamespace($namespace));
-//        die();
+        /** @var \Elenyum\Maker\Service\Module\Entity\ServiceAddToClassInterface $service */
+        foreach ($this->entityServices as $service) {
+            if ($service instanceof SetFullNamespaceInterface) {
+                $service->setFullNamespace($fullNamespace);
+            }
+
+            $service->create($class, $data);
+        }
+
         return $namespace;
     }
 
@@ -102,13 +110,15 @@ class ServiceCreateEntityHandler implements ServiceCreateInterface
         return "<?php \n".$printer->printNamespace($namespace);
     }
 
-    private function prepareTableName(string $input): string
+    private function prepareTableName(string $moduleName, string $input, string $version): string
     {
-        $pattern = '/(?<!^)[A-Z]/';
-        $snakeCase = preg_replace_callback($pattern, function ($matches) {
+        $result = preg_replace_callback('/(?<!^)[A-Z]/', function ($matches) {
             return '_' . strtolower($matches[0]);
         }, $input);
 
-        return mb_strtolower($snakeCase);
+        $result .= '__' . $version;
+        $result .= '__' . $moduleName;
+
+        return mb_strtolower($result);
     }
 }

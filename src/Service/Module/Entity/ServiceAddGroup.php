@@ -5,22 +5,28 @@ namespace Elenyum\Maker\Service\Module\Entity;
 use Nette\PhpGenerator\ClassType;
 use Nette\PhpGenerator\Property;
 
-class ServiceAddGroup implements ServiceAddToClass
+class ServiceAddGroup implements ServiceAddToClassInterface
 {
     /**
      * @param ClassType $class
-     * @param array $dataColumn
+     * @param array $data
      * @return ClassType
      */
-    public function create(ClassType $class, array $dataColumn): ClassType
+    public function create(ClassType $class, array $data): ClassType
     {
+        $dataColumn = $data['column'];
+//        dd($data);
+        if (!empty($data['group'])) {
+            $class->addAttribute('Groups', [$data['group']]);
+        }
         foreach ($dataColumn as $item) {
-            if (empty($item['group'])) {
+            $groups = $this->prepareGroup($item['group']);
+            if (empty($groups)) {
                 continue;
             }
             $this->addGroup(
-                $class->getProperty($item['name']),
-                $item['group']
+                $class->getProperty(mb_strtolower($item['name'])),
+                $groups
             );
         }
 
@@ -34,9 +40,7 @@ class ServiceAddGroup implements ServiceAddToClass
      */
     private function addGroup(Property $property, array $groups): void
     {
-        $groups = $this->prepareGroup($groups);
-
-        $property->addAttribute('Groups', $groups);
+        $property->addAttribute('Groups', [$groups]);
     }
 
     /**

@@ -7,18 +7,24 @@ use Exception;
 use Nette\PhpGenerator\ClassType;
 use Nette\PhpGenerator\Property;
 
-class ServiceAddProperty implements ServiceAddToClass
+class ServiceAddProperty implements ServiceAddToClassInterface, SetFullNamespaceInterface
 {
+    /**
+     * @var string
+     */
+    private string $namespace;
+
     /**
      * @throws Exception
      */
-    public function create(ClassType $class, array $dataColumn): ClassType
+    public function create(ClassType $class, array $data): ClassType
     {
+        $dataColumn = $data['column'];
         foreach ($dataColumn as $column) {
             $columnName = mb_strtolower($column['name']);
             $addProperty = $class->addProperty($columnName);
             $getPhpType = $this->getPhpType($column['info']['type'], $column['info']['targetEntity'] ?? null);
-            $addProperty->setType($getPhpType);
+            $addProperty->setType('?'.$getPhpType);
             $this->addDoctrineAttributeForProperty($addProperty, $column);
             $this->addSetter($class, $columnName, $getPhpType);
             $this->addGetter($class, $columnName, $getPhpType);
@@ -40,17 +46,17 @@ class ServiceAddProperty implements ServiceAddToClass
         $setter->setReturnType('self');
     }
 
-    private function addGetter(ClassType $class, $propertyName, $phpType)
+    private function addGetter(ClassType $class, $propertyName, $phpType): void
     {
         $getter = $class->addMethod('get'.ucfirst($propertyName));
         $getter->addBody('return $this->'.$propertyName.';');
-        $getter->setReturnType($phpType);
+        $getter->setReturnType('?'.$phpType);
     }
 
-    private function addDoctrineAttributeForProperty(Property $property,  array $columnData): Property
+    private function addDoctrineAttributeForProperty(Property $property,  array $columnData): void
     {
         $columnType = $columnData['info']['type'];
-        if (isset($columnData['generatedId']) && $columnData['generatedId'] === true) {
+        if (isset($columnData['info']['isPrimary']) && $columnData['info']['isPrimary'] === true) {
             $property->addAttribute('ORM\Id');
             $property->addAttribute('ORM\GeneratedValue');
         }
@@ -61,24 +67,29 @@ class ServiceAddProperty implements ServiceAddToClass
             'text' => $property->addAttribute('ORM\Column', ['type' => Types::TEXT]),
             'string' => $property->addAttribute('ORM\Column', ['type' => Types::STRING]),
             'json' => $property->addAttribute('ORM\Column', ['type' => Types::JSON]),
-            'many-to-one' => $property->addAttribute('ORM\ManyToOne', [
-                'targetEntity' => $columnData['info']['targetEntity'],
-            ]),
+            /** @todo пока оставлю для примера в функции которая сама себя вызовет, для many-to-many может пригодится */
+            'many-to-one' => (fn() => $property->addAttribute('ORM\ManyToOne', [
+                'targetEntity' => $this->namespace.'\\'.$columnData['info']['targetEntity'],
+                'inversedBy' => $columnData['info']['inversedBy'],
+                'cascade' => ['persist']
+            ]))(),
             'one-to-one' => $property->addAttribute('ORM\OneToOne', [
-                'targetEntity' => $columnData['info']['targetEntity'],
-                'mappedBy' => $columnData['info']['mappedBy']
+                'targetEntity' => $this->namespace.'\\'.$columnData['info']['targetEntity'],
+                'mappedBy' => $columnData['info']['inversedBy'],
+                'cascade' => ['persist']
             ]),
             'many-to-many' => $property->addAttribute('ORM\ManyToMany', [
-                'targetEntity' => $columnData['info']['targetEntity'],
-                'mappedBy' => $columnData['info']['mappedBy']
+                'targetEntity' =>  $this->namespace.'\\'.$columnData['info']['targetEntity'],
+                'mappedBy' => $columnData['info']['inversedBy'],
+                'cascade' => ['persist']
             ]),
             'one-to-many' => $property->addAttribute('ORM\OneToMany', [
-                'targetEntity' => $columnData['info']['targetEntity'],
-                'mappedBy' => $columnData['info']['mappedBy']
+                'targetEntity' =>  $this->namespace.'\\'.$columnData['info']['targetEntity'],
+                'mappedBy' => $columnData['info']['inversedBy'],
+                'cascade' => ['persist']
             ]),
         };
 
-        return $property;
     }
 
     /**
@@ -87,7 +98,7 @@ class ServiceAddProperty implements ServiceAddToClass
     private function getPhpType(string $sourceType, ?string $toEntity = null): string
     {
         $map = [
-            'integer' => 'integer',
+            'integer' => 'int',
             'float' => 'float',
             'text' => 'string',
             'string' => 'string',
@@ -100,10 +111,14 @@ class ServiceAddProperty implements ServiceAddToClass
 
         $result = $map[$sourceType] ?? null;
         if ($result === null) {
-            dd($sourceType);
             throw new Exception('Undefined type of the property');
         }
 
         return $result;
+    }
+
+    public function setFullNamespace(string $namespace): void
+    {
+        $this->namespace = $namespace;
     }
 }

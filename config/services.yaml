@@ -21,25 +21,34 @@ services:
 
   Elenyum\Maker\Service\Module\Entity\ServiceAddValidator:
     tags:
-         - {name: 'elenyum.make.entity.create', priority: 90}
+         - {name: 'elenyum.make.entity.create', priority: -100 }
 
   Elenyum\Maker\Service\Module\Entity\ServiceAddGroup:
     tags:
-         - { name: 'elenyum.make.entity.create', priority: 80 }
+         - { name: 'elenyum.make.entity.create', priority: -110 }
 
   Elenyum\Maker\Service\Module\Handler\ServiceCreateEntityHandler:
     tags: ['elenyum.make.handler.creator']
     arguments:
-      $propertyServices: !tagged_iterator elenyum.make.entity.create
+      $entityServices: !tagged_iterator elenyum.make.entity.create
 #     @see ../src/DependencyInjection/ElenyumMakerExtension.php:19
       $options: '%elenyum_maker.config%'
+
+  Elenyum\Maker\Service\Module\Controller\ServiceAddGetController:
+    tags: ['elenyum.make.controller.create']
 
   Elenyum\Maker\Service\Module\Handler\ServiceCreateControllerHandler:
     tags: ['elenyum.make.handler.creator']
     arguments:
       $options: '%elenyum_maker.config%'
+      $controllerServices: !tagged_iterator elenyum.make.controller.create
 
   Elenyum\Maker\Service\Module\Handler\ServiceCreateServiceHandler:
+    tags: ['elenyum.make.handler.creator']
+    arguments:
+      $options: '%elenyum_maker.config%'
+
+  Elenyum\Maker\Service\Module\Handler\ServiceCreateRepositoryHandler:
     tags: ['elenyum.make.handler.creator']
     arguments:
       $options: '%elenyum_maker.config%'
@@ -47,3 +56,27 @@ services:
   Elenyum\Maker\Service\Module\ServiceMakeModule:
     arguments:
       $create: !tagged_iterator elenyum.make.handler.creator
+
+
+#  Elenyum\Maker\EventSubscriber\CheckEntityIdSubscriber:
+#    arguments: [ '@doctrine.orm.entity_manager' ]
+#    tags:
+#        -
+#          name: 'doctrine.event_listener'
+#          # this is the only required option for the lifecycle listener tag
+#          event: 'prePersist'
+#
+#          # listeners can define their priority in case listeners are associated
+#          # to the same event (default priority = 0; higher numbers = listener is run earlier)
+#          priority: 500
+#
+#          # you can also restrict listeners to a specific Doctrine connection
+#          connection: 'default'
+#
+#
+#  Elenyum\Maker\Serializer\EntityDenormalizer:
+#    arguments: [ '@doctrine.orm.entity_manager' ]
+#    tags:
+#      -
+#        name: serializer.normalizer
+#        priority: -900

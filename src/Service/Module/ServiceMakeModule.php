@@ -47,17 +47,17 @@ class ServiceMakeModule
     {
         $result = [];
         foreach ($data as $module) {
-//            $module = (array)$module;
             $name = $module['name'];
             foreach ($module['version'] as $version => $value) {
-//                $value = (array)$value;
                 /** так-как по каждому сущности из каждой версии нужны контроллеры, сущности и прочее, то расскладываем все в массив */
                 foreach ($value['entity'] as $entity) {
-//                    $entity = (array) $entity;
                     $result[] = [
-                        'module_name' => $name,
-                        'version' => $version,
-                        'entity_name' => $entity['name'],
+                        'module_name' => ucfirst($name),
+                        'module_name_lower' => mb_strtolower($name),
+                        'version' => mb_strtolower($version),
+                        'version_namespace' => ucfirst(str_replace('.', '_', $version)),
+                        'entity_name' => ucfirst($entity['name']),
+                        'entity_name_lower' => mb_strtolower($entity['name']),
                         'isEndpoint' => $entity['isEndpoint'],
                         'group' => $entity['group'],
                         'validator' => $entity['validator'],
