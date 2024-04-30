@@ -20,36 +20,77 @@ class ServiceAddProperty implements ServiceAddToClassInterface, SetFullNamespace
     public function create(ClassType $class, array $data): ClassType
     {
         $dataColumn = $data['column'];
+        $this->addConstruct($class, $dataColumn);
         foreach ($dataColumn as $column) {
-            $columnName = mb_strtolower($column['name']);
+            $columnName = lcfirst($column['name']);
             $addProperty = $class->addProperty($columnName);
             $getPhpType = $this->getPhpType($column['info']['type'], $column['info']['targetEntity'] ?? null);
             $addProperty->setType('?'.$getPhpType);
             $this->addDoctrineAttributeForProperty($addProperty, $column);
-            $this->addSetter($class, $columnName, $getPhpType);
-            $this->addGetter($class, $columnName, $getPhpType);
+            $this->addSetter($class, $addProperty, $column);
+            $this->addGetter($class, $addProperty, $column);
         }
 
         return $class;
     }
 
-    private function addSetter(ClassType $class, $propertyName, $phpType)
+    private function addSetter(ClassType $class, Property $property, array $columnData): void
     {
-        $setter = $class->addMethod('set'.ucfirst($propertyName));
-        $setter->addParameter($propertyName)->setType($phpType);
-        $setter->addBody(
-            '$this->'.$propertyName.' = $'.$propertyName.';'.
-            PHP_EOL.
-            PHP_EOL.
-            'return $this;'
-        );
+        $propertyName = $property->getName();
+        $phpType = $property->getType();
+
+        $typeIsArrayCollection = [
+            'one-to-many',
+            'many-to-many',
+        ];
+
+        if (in_array($columnData['info']['type'], $typeIsArrayCollection)) {
+            $methodAddName = 'add'.ucfirst($propertyName);
+            $add = $class->addMethod($methodAddName);
+            $add->addParameter($propertyName)->setType('\\'.$this->namespace.'\\'.$columnData['info']['targetEntity']);
+            $add->addBody(
+                sprintf('
+if (!$this->%1$s->contains($%1$s)) {
+    $this->%1$s->add($%1$s);
+    $%1$s->set%2$s($this);
+} 
+
+return $this;
+', $propertyName, ucfirst($columnData['info']['inversedBy']))
+            );
+            $add->setReturnType('self');
+
+            $setter = $class->addMethod('set'.ucfirst($propertyName));
+            $setter->addParameter('items')->setType('array');
+            $setter->addBody(
+                sprintf('
+foreach ($items as $item) {
+    $this->%1$s($item);
+}
+
+return $this;
+', $methodAddName)
+            );
+        } else {
+            $setter = $class->addMethod('set'.ucfirst($propertyName));
+            $setter->addParameter($propertyName)->setType($phpType);
+            $setter->addBody(
+                '$this->'.$propertyName.' = $'.$propertyName.';'.
+                PHP_EOL.
+                PHP_EOL.
+                'return $this;'
+            );
+        }
         $setter->setReturnType('self');
     }
 
-    private function addGetter(ClassType $class, $propertyName, $phpType): void
+    private function addGetter(ClassType $class, Property $property, array $data): void
     {
+        $propertyName = $property->getName();
+        $phpType = $property->getType();
+
         $getter = $class->addMethod('get'.ucfirst($propertyName));
-        $getter->addBody('return $this->'.$propertyName.';');
+        $getter->addBody(sprintf('return $this->%s;', $propertyName));
         $getter->setReturnType('?'.$phpType);
     }
 
@@ -62,32 +103,47 @@ class ServiceAddProperty implements ServiceAddToClassInterface, SetFullNamespace
         }
 
         match ($columnType) {
-            'integer' => $property->addAttribute('ORM\Column', ['type' => Types::INTEGER]),
-            'float' => $property->addAttribute('ORM\Column', ['type' => Types::FLOAT]),
-            'text' => $property->addAttribute('ORM\Column', ['type' => Types::TEXT]),
-            'string' => $property->addAttribute('ORM\Column', ['type' => Types::STRING]),
-            'json' => $property->addAttribute('ORM\Column', ['type' => Types::JSON]),
+            'integer' => $property->addAttribute('ORM\Column', ['type' => Types::INTEGER, 'nullable' => true]),
+            'float' => $property->addAttribute('ORM\Column', ['type' => Types::FLOAT, 'nullable' => true]),
+            'text' => $property->addAttribute('ORM\Column', ['type' => Types::TEXT, 'nullable' => true]),
+            'string' => $property->addAttribute('ORM\Column', ['type' => Types::STRING, 'nullable' => true]),
+            'json' => $property->addAttribute('ORM\Column', ['type' => Types::JSON, 'nullable' => true]),
             /** @todo пока оставлю для примера в функции которая сама себя вызовет, для many-to-many может пригодится */
-            'many-to-one' => (fn() => $property->addAttribute('ORM\ManyToOne', [
-                'targetEntity' => $this->namespace.'\\'.$columnData['info']['targetEntity'],
-                'inversedBy' => $columnData['info']['inversedBy'],
-                'cascade' => ['persist']
-            ]))(),
-            'one-to-one' => $property->addAttribute('ORM\OneToOne', [
-                'targetEntity' => $this->namespace.'\\'.$columnData['info']['targetEntity'],
-                'mappedBy' => $columnData['info']['inversedBy'],
-                'cascade' => ['persist']
-            ]),
-            'many-to-many' => $property->addAttribute('ORM\ManyToMany', [
-                'targetEntity' =>  $this->namespace.'\\'.$columnData['info']['targetEntity'],
-                'mappedBy' => $columnData['info']['inversedBy'],
-                'cascade' => ['persist']
-            ]),
-            'one-to-many' => $property->addAttribute('ORM\OneToMany', [
-                'targetEntity' =>  $this->namespace.'\\'.$columnData['info']['targetEntity'],
-                'mappedBy' => $columnData['info']['inversedBy'],
-                'cascade' => ['persist']
-            ]),
+            'many-to-one' => (function (Property $property, $columnData) {
+                $property->addAttribute('ORM\ManyToOne', [
+                    'targetEntity' => $this->namespace.'\\'.$columnData['info']['targetEntity'],
+                    'inversedBy' => $columnData['info']['inversedBy']
+                ]);
+                $property->addAttribute('ORM\JoinColumn', [
+                    'name' => mb_strtolower($columnData['info']['inversedBy']).'_id',
+                    'referencedColumnName' => 'id',
+                    'onDelete' => 'SET NULL',
+                ]);
+            })($property, $columnData),
+            'one-to-one' => (function (Property $property, $columnData) {
+                $property->addAttribute('ORM\OneToOne', [
+                    'targetEntity' => $this->namespace.'\\'.$columnData['info']['targetEntity'],
+                    'mappedBy' => $columnData['info']['inversedBy']
+                ]);
+                $property->addAttribute('ORM\JoinColumn', [
+                    'name' => mb_strtolower($columnData['info']['inversedBy']).'_id',
+                    'referencedColumnName' => 'id',
+                    'onDelete' => 'SET NULL',
+                ]);
+            })($property, $columnData),
+
+            'many-to-many' => (function (Property $property, $columnData) {
+                $property->addAttribute('ORM\ManyToMany', [
+                    'targetEntity' => $this->namespace.'\\'.$columnData['info']['targetEntity'],
+                    'mappedBy' => $columnData['info']['inversedBy']
+                ]);
+            })($property, $columnData),
+            'one-to-many' => (function (Property $property, $columnData) {
+                $property->addAttribute('ORM\OneToMany', [
+                    'targetEntity' => $this->namespace.'\\'.$columnData['info']['targetEntity'],
+                    'mappedBy' => $columnData['info']['inversedBy']
+                ]);
+            })($property, $columnData),
         };
 
     }
@@ -120,5 +176,25 @@ class ServiceAddProperty implements ServiceAddToClassInterface, SetFullNamespace
     public function setFullNamespace(string $namespace): void
     {
         $this->namespace = $namespace;
+    }
+
+    private function addConstruct(ClassType $class, mixed $dataColumn): void
+    {
+        $typeIsArrayCollection = [
+            'one-to-many',
+            'many-to-many',
+        ];
+        $body = [];
+        foreach ($dataColumn as $column) {
+            if (in_array($column['info']['type'], $typeIsArrayCollection)) {
+                $body[] = sprintf('$this->%s = new ArrayCollection();', lcfirst($column['name']));
+            }
+        }
+        if (!empty($body)) {
+            $method = $class->addMethod('__construct');
+            foreach ($body as $item) {
+                $method->addBody($item);
+            }
+        }
     }
 }

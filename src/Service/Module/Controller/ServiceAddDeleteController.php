@@ -6,7 +6,7 @@ use Nette\PhpGenerator\Literal;
 use Nette\PhpGenerator\PhpNamespace;
 use Symfony\Component\HttpFoundation\Response;
 
-class ServiceAddGetController implements ServiceAddControllerInterface
+class ServiceAddDeleteController implements ServiceAddControllerInterface
 {
     public function createController(string $fullNamespace, string $service, string $entity, array $data, ?string $prefix): PhpNamespace
     {
@@ -30,18 +30,24 @@ class ServiceAddGetController implements ServiceAddControllerInterface
         $controllerClass->addAttribute('Tag', ['name' => $lowerNameModule]);
         $version = str_replace('.', '_', $data['version']);
         $path = (!empty($prefix) ? "/{$prefix}" : '').sprintf(
-                '/%s/%s/%s/{id<\d+>}',
+                '/%s/%s/%s',
                 $version,
                 $lowerNameModule,
                 $lowerNameEntity
             );
 
-        $controllerClass->addConstant('ALLOW_GROUPS', preg_replace('/(\w+)/', 'GET_$1', $data['group']));
+        $controllerClass->addConstant('ALLOW_GROUPS', preg_replace('/(\w+)/', 'DELETE_$1', $data['group']));
         $entityClass = new Literal($entity.'::class');
-        $controllerGroups = new Literal($controllerName.'::ALLOW_GROUPS');
+        $controllerGetName = sprintf('%sGetController', ucfirst($data['entity_name']));;
+        $controllerGetGroups = new Literal($controllerGetName.'::ALLOW_GROUPS');
+
+        $controllerClass->addAttribute(
+            'OA\Parameter',
+            ['name' => 'id', 'in' => 'path', 'schema' => Literal::new('OA\Schema', ['type' => 'integer'])]
+        );
         $controllerClass->addAttribute('OA\Response', [
             'response' => Response::HTTP_OK,
-            'description' => 'Get item by id',
+            'description' => 'Add item',
             'content' => Literal::new('OA\JsonContent', [
                 'properties' => [
                     Literal::new('OA\Property', ['property' => 'message', 'type' => 'string', 'default' => 'ok']),
@@ -52,7 +58,7 @@ class ServiceAddGetController implements ServiceAddControllerInterface
                             'property' => 'item',
                             'ref' => Literal::new(
                                 'Model',
-                                ['type' => $entityClass, 'groups' => $controllerGroups]
+                                ['type' => $entityClass, 'groups' => $controllerGetGroups]
                             ),
                         ]
                     ),
@@ -61,7 +67,7 @@ class ServiceAddGetController implements ServiceAddControllerInterface
         ]);
         $controllerClass->addAttribute('OA\Response', [
             'response' => Response::HTTP_EXPECTATION_FAILED,
-            'description' => 'Get item error',
+            'description' => 'Add item error',
             'content' => Literal::new('OA\JsonContent', [
                 'properties' => [
                     Literal::new('OA\Property', ['property' => 'message', 'type' => 'string', 'default' => 'Error message']),
@@ -69,7 +75,7 @@ class ServiceAddGetController implements ServiceAddControllerInterface
                 ],
             ]),
         ]);
-        $method = new Literal('Request::METHOD_GET');
+        $method = new Literal('Request::METHOD_DELETE');
         $controllerClass->addAttribute('Route', ['path' => $path, 'methods' => [$method]]);
 
         $invoke = $controllerClass->addMethod('__invoke');
@@ -79,12 +85,12 @@ class ServiceAddGetController implements ServiceAddControllerInterface
 
         $body = '
 try {
-    $item = $service->getOne($request->get(\'id\'), self::ALLOW_GROUPS);
-     
+    $item = $service->delete($request->get(\'id\'), CardGetController::ALLOW_GROUPS);
+
     return $this->json([
         \'message\' => \'ok\',
         \'success\' => true,
-        \'item\' => $item,
+        \'item\' => $item
     ], Response::HTTP_OK);
 } catch (Throwable $e) {
     return $this->json([
@@ -101,6 +107,6 @@ try {
 
     public function getName(string $entityName): string
     {
-        return sprintf('%sGetController', ucfirst($entityName));
+        return sprintf('%sDeleteController', ucfirst($entityName));
     }
 }

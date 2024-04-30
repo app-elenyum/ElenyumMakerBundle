@@ -27,56 +27,48 @@ services:
     tags:
          - { name: 'elenyum.make.entity.create', priority: -110 }
 
-  Elenyum\Maker\Service\Module\Handler\ServiceCreateEntityHandler:
-    tags: ['elenyum.make.handler.creator']
-    arguments:
-      $entityServices: !tagged_iterator elenyum.make.entity.create
-#     @see ../src/DependencyInjection/ElenyumMakerExtension.php:19
-      $options: '%elenyum_maker.config%'
-
   Elenyum\Maker\Service\Module\Controller\ServiceAddGetController:
     tags: ['elenyum.make.controller.create']
 
+  Elenyum\Maker\Service\Module\Controller\ServiceAddListController:
+    tags: ['elenyum.make.controller.create']
+
+  Elenyum\Maker\Service\Module\Controller\ServiceAddPostController:
+    tags: ['elenyum.make.controller.create']
+
+  Elenyum\Maker\Service\Module\Controller\ServiceAddPutController:
+    tags: ['elenyum.make.controller.create']
+
+  Elenyum\Maker\Service\Module\Controller\ServiceAddDeleteController:
+    tags: ['elenyum.make.controller.create']
+
   Elenyum\Maker\Service\Module\Handler\ServiceCreateControllerHandler:
-    tags: ['elenyum.make.handler.creator']
+    tags:
+        - { name: 'elenyum.make.handler.creator', priority: 10 }
     arguments:
       $options: '%elenyum_maker.config%'
       $controllerServices: !tagged_iterator elenyum.make.controller.create
 
   Elenyum\Maker\Service\Module\Handler\ServiceCreateServiceHandler:
-    tags: ['elenyum.make.handler.creator']
+    tags:
+        - { name: 'elenyum.make.handler.creator', priority: 20 }
     arguments:
       $options: '%elenyum_maker.config%'
 
   Elenyum\Maker\Service\Module\Handler\ServiceCreateRepositoryHandler:
-    tags: ['elenyum.make.handler.creator']
+    tags:
+        - { name: 'elenyum.make.handler.creator', priority: 30 }
     arguments:
+      $options: '%elenyum_maker.config%'
+
+  Elenyum\Maker\Service\Module\Handler\ServiceCreateEntityHandler:
+    tags:
+        - { name: 'elenyum.make.handler.creator', priority: 40 }
+    arguments:
+      $entityServices: !tagged_iterator elenyum.make.entity.create
+      #     @see ../src/DependencyInjection/ElenyumMakerExtension.php:19
       $options: '%elenyum_maker.config%'
 
   Elenyum\Maker\Service\Module\ServiceMakeModule:
     arguments:
       $create: !tagged_iterator elenyum.make.handler.creator
-
-
-#  Elenyum\Maker\EventSubscriber\CheckEntityIdSubscriber:
-#    arguments: [ '@doctrine.orm.entity_manager' ]
-#    tags:
-#        -
-#          name: 'doctrine.event_listener'
-#          # this is the only required option for the lifecycle listener tag
-#          event: 'prePersist'
-#
-#          # listeners can define their priority in case listeners are associated
-#          # to the same event (default priority = 0; higher numbers = listener is run earlier)
-#          priority: 500
-#
-#          # you can also restrict listeners to a specific Doctrine connection
-#          connection: 'default'
-#
-#
-#  Elenyum\Maker\Serializer\EntityDenormalizer:
-#    arguments: [ '@doctrine.orm.entity_manager' ]
-#    tags:
-#      -
-#        name: serializer.normalizer
-#        priority: -900

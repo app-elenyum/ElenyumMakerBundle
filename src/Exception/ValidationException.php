@@ -2,10 +2,11 @@
 
 namespace Elenyum\Maker\Exception;
 
+use Exception;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
-class ValidationException extends \Exception
+class ValidationException extends Exception
 {
     private array $errors;
 

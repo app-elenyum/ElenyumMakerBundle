@@ -15,7 +15,8 @@ class ServiceCreateControllerHandler implements ServiceCreateInterface
         readonly private Filesystem $filesystem,
         readonly private array $options,
         readonly private Countable $controllerServices,
-    ) {}
+    ) {
+    }
 
     /**
      * @param array $data
@@ -37,20 +38,47 @@ class ServiceCreateControllerHandler implements ServiceCreateInterface
         }
         $prefix = $root['prefix'] ?? null;
 
+        $entityName = $data['entity_name'];
         $version = $data['version_namespace'];
         $moduleName = $data['module_name'];
         $rootNamespace = ucfirst($namespace);
 
         $fullNamespace = $rootNamespace.'\\'.$moduleName.'\\'.$version.'\\Controller';
+        $serviceName = $entityName.'Service';
+        $namespaceToService = $rootNamespace.'\\'.$moduleName.'\\'.$version.'\\Service\\'.$serviceName;
+        $namespaceToEntity = $rootNamespace.'\\'.$moduleName.'\\'.$version.'\\Entity\\'.$entityName;
+
+        $createdControllers = [];
 
         /** @var ServiceAddControllerInterface $controllerService */
         foreach ($this->controllerServices as $controllerService) {
-            $n = $controllerService->createController($fullNamespace, $data, $prefix);
+            $phpNamespace = $controllerService->createController($fullNamespace, $serviceName, $entityName, $data, $prefix);
+            $phpNamespace->addUse($namespaceToService);
+            $phpNamespace->addUse($namespaceToEntity);
+            $dirControllerFile = sprintf(
+                '%s/%s/%s/Controller/%s.php',
+                $path,
+                $moduleName,
+                $version,
+                $controllerService->getName($entityName)
+            );
+            $operation = 'created';
+            if (file_exists($dirControllerFile)) {
+                $operation = 'updated';
+            }
+            $controllerFileData = $this->printNamespace($phpNamespace);
+            $this->filesystem->dumpFile($dirControllerFile, $controllerFileData);
 
-//            dd($this->printNamespace($n));
+            $createdControllers[] = [
+                'module' => $moduleName,
+                'version' => $data['version'],
+                'operation' => $operation,
+                'type' => 'controller',
+                'file' => $dirControllerFile,
+            ];
         }
 
-        return ['ServiceCreateControllerHandler'];
+        return $createdControllers;
     }
 
     /**

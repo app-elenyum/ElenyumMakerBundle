@@ -25,7 +25,7 @@ class ServiceAddGroup implements ServiceAddToClassInterface
                 continue;
             }
             $this->addGroup(
-                $class->getProperty(mb_strtolower($item['name'])),
+                $class->getProperty(lcfirst($item['name'])),
                 $groups
             );
         }

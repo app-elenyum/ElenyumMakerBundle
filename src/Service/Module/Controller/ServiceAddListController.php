@@ -6,7 +6,7 @@ use Nette\PhpGenerator\Literal;
 use Nette\PhpGenerator\PhpNamespace;
 use Symfony\Component\HttpFoundation\Response;
 
-class ServiceAddGetController implements ServiceAddControllerInterface
+class ServiceAddListController implements ServiceAddControllerInterface
 {
     public function createController(string $fullNamespace, string $service, string $entity, array $data, ?string $prefix): PhpNamespace
     {
@@ -30,38 +30,51 @@ class ServiceAddGetController implements ServiceAddControllerInterface
         $controllerClass->addAttribute('Tag', ['name' => $lowerNameModule]);
         $version = str_replace('.', '_', $data['version']);
         $path = (!empty($prefix) ? "/{$prefix}" : '').sprintf(
-                '/%s/%s/%s/{id<\d+>}',
+                '/%s/%s/%s',
                 $version,
                 $lowerNameModule,
                 $lowerNameEntity
             );
-
+        
         $controllerClass->addConstant('ALLOW_GROUPS', preg_replace('/(\w+)/', 'GET_$1', $data['group']));
         $entityClass = new Literal($entity.'::class');
         $controllerGroups = new Literal($controllerName.'::ALLOW_GROUPS');
         $controllerClass->addAttribute('OA\Response', [
             'response' => Response::HTTP_OK,
-            'description' => 'Get item by id',
+            'description' => 'Get list items',
             'content' => Literal::new('OA\JsonContent', [
                 'properties' => [
                     Literal::new('OA\Property', ['property' => 'message', 'type' => 'string', 'default' => 'ok']),
-                    Literal::new('OA\Property', ['property' => 'success', 'type' => 'boolean', 'default' => true]),
+                    Literal::new('OA\Property', ['property' => 'success', 'default' => true]),
                     Literal::new(
                         'OA\Property',
                         [
-                            'property' => 'item',
-                            'ref' => Literal::new(
-                                'Model',
-                                ['type' => $entityClass, 'groups' => $controllerGroups]
-                            ),
+                            'property' => 'items',
+                            'type' => 'array',
+                            'items' => Literal::new('OA\Items', ['ref' => Literal::new('Model', ['type' => $entityClass, 'groups' => $controllerGroups])]),
                         ]
                     ),
+                    Literal::new('OA\Property', [
+                        'property' => 'paginator',
+                        'properties' => [
+                            Literal::new('OA\Property', ['property' => 'offset', 'type' => 'integer']),
+                            Literal::new('OA\Property', ['property' => 'limit', 'type' => 'integer']),
+                            Literal::new('OA\Property',
+                                [
+                                    'property' => 'total',
+                                    'description' => 'total elements, width filter if exist',
+                                    'type' => 'integer',
+                                ]
+                            ),
+                        ],
+                        'type' => 'object',
+                    ]),
                 ],
             ]),
         ]);
         $controllerClass->addAttribute('OA\Response', [
             'response' => Response::HTTP_EXPECTATION_FAILED,
-            'description' => 'Get item error',
+            'description' => 'Get list error',
             'content' => Literal::new('OA\JsonContent', [
                 'properties' => [
                     Literal::new('OA\Property', ['property' => 'message', 'type' => 'string', 'default' => 'Error message']),
@@ -69,6 +82,12 @@ class ServiceAddGetController implements ServiceAddControllerInterface
                 ],
             ]),
         ]);
+
+        $controllerClass->addAttribute('OA\Parameter', ['name' => 'limit', 'in' => 'query', 'schema' => Literal::new('OA\Schema', ['type' => 'integer']), 'example' => 10]);
+        $controllerClass->addAttribute('OA\Parameter', ['name' => 'offset', 'in' => 'query', 'schema' => Literal::new('OA\Schema', ['type' => 'integer']), 'example' => 20]);
+        $controllerClass->addAttribute('OA\Parameter', ['name' => 'fields', 'in' => 'query', 'schema' => Literal::new('OA\Schema', ['type' => 'string']), 'example' => '["id", "name", "card.id", "card.name"]']);
+        $controllerClass->addAttribute('OA\Parameter', ['name' => 'filter', 'in' => 'query', 'schema' => Literal::new('OA\Schema', ['type' => 'string']), 'example' => '{"name":"test"}']);
+        $controllerClass->addAttribute('OA\Parameter', ['name' => 'orderBy', 'in' => 'query', 'schema' => Literal::new('OA\Schema', ['type' => 'string']), 'example' => '{"name":"desc"}']);
         $method = new Literal('Request::METHOD_GET');
         $controllerClass->addAttribute('Route', ['path' => $path, 'methods' => [$method]]);
 
@@ -79,17 +98,33 @@ class ServiceAddGetController implements ServiceAddControllerInterface
 
         $body = '
 try {
-    $item = $service->getOne($request->get(\'id\'), self::ALLOW_GROUPS);
-     
+    $offset = $request->get(\'offset\', 0);
+    $limit = $request->get(\'limit\', 10);
+    $orderBy = $request->get(\'orderBy\', \'{}\');
+    $filter = $request->get(\'filter\', \'{}\');
+    $fields = $request->get(\'fields\', \'[]\');
+    [$total, $items] = $service->getList(
+        offset: $offset,
+        limit: $limit,
+        orderBy: json_decode($service->prepareJsonFormat($orderBy), true) ?? [],
+        groups: self::ALLOW_GROUPS,
+        filter: json_decode($service->prepareJsonFormat($filter), true) ?? [],
+        fields: json_decode($service->prepareJsonFormat($fields), true) ?? [],
+    );
     return $this->json([
-        \'message\' => \'ok\',
+        \'message\' => \'route to /elenyum/#/ if u need editor\',
         \'success\' => true,
-        \'item\' => $item,
+        \'items\' => $items,
+        \'paginator\' => [
+            \'offset\' => $offset,
+            \'limit\' => $limit,
+            \'total\' => $total,
+        ],
     ], Response::HTTP_OK);
 } catch (Throwable $e) {
     return $this->json([
-        \'message\' => $e->getMessage(),
-        \'success\' => false,
+    \'message\' => $e->getMessage(),
+    \'success\' => false,
     ], Response::HTTP_EXPECTATION_FAILED);
 }
 ';
@@ -101,6 +136,6 @@ try {
 
     public function getName(string $entityName): string
     {
-        return sprintf('%sGetController', ucfirst($entityName));
+        return sprintf('%sListController', ucfirst($entityName));
     }
 }

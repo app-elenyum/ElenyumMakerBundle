@@ -34,15 +34,15 @@ class ServiceCreateRepositoryHandler implements ServiceCreateInterface
             throw new MissingOptionsException('Not defined "namespace" option');
         }
 
-        $repositoryFileData = $this->printNamespace(
-            $this->createRepository($namespace, $data)
-        );
-
         $version = $data['version_namespace'];
         $entityName = $data['entity_name'];
         $repositoryName = $entityName.'Repository';
         $moduleName = $data['module_name'];
+
         $dirRepositoryFile = $path.'/'.$moduleName.'/'.$version.'/Repository/'.$repositoryName.'.php';
+
+        $phpNamespace = $this->createRepository($namespace, $data);
+        $repositoryFileData = $this->printNamespace($phpNamespace);
 
         $operation = 'created';
         if (file_exists($dirRepositoryFile)) {
@@ -91,13 +91,13 @@ class ServiceCreateRepositoryHandler implements ServiceCreateInterface
         $class = $namespace->addClass($repositoryName);
         $class->addComment(sprintf('
 Class %1$sRepository
-@package Module\%1$s\Repository
+@package %2$s
 
 @method %1$s|null find($id, $lockMode = null, $lockVersion = null)
 @method %1$s|null findOneBy(array $criteria, array $orderBy = null)
 @method %1$s[]    findAll()
 @method %1$s[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
-        ', $entityName));
+        ', $entityName, $fullNamespace));
         $class->setExtends('ServiceEntityRepository');
         $constructor = $class->addMethod('__construct');
         $constructor->addParameter('registry')->setType('ManagerRegistry');

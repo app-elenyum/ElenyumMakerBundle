@@ -6,7 +6,7 @@ use Nette\PhpGenerator\Literal;
 use Nette\PhpGenerator\PhpNamespace;
 use Symfony\Component\HttpFoundation\Response;
 
-class ServiceAddGetController implements ServiceAddControllerInterface
+class ServiceAddPutController implements ServiceAddControllerInterface
 {
     public function createController(string $fullNamespace, string $service, string $entity, array $data, ?string $prefix): PhpNamespace
     {
@@ -15,6 +15,7 @@ class ServiceAddGetController implements ServiceAddControllerInterface
         $namespace->addUse('Symfony\Component\Routing\Attribute\Route');
         $namespace->addUse('Symfony\Component\HttpFoundation\Response');
         $namespace->addUse('Elenyum\Maker\HttpFoundation\Request');
+        $namespace->addUse('Elenyum\Maker\Exception\ValidationException');
         $namespace->addUse('Elenyum\OpenAPI\Attribute\Tag');
         $namespace->addUse('Elenyum\OpenAPI\Attribute\Model');
         $namespace->addUse('OpenApi\Attributes', 'OA');
@@ -30,18 +31,25 @@ class ServiceAddGetController implements ServiceAddControllerInterface
         $controllerClass->addAttribute('Tag', ['name' => $lowerNameModule]);
         $version = str_replace('.', '_', $data['version']);
         $path = (!empty($prefix) ? "/{$prefix}" : '').sprintf(
-                '/%s/%s/%s/{id<\d+>}',
+                '/%s/%s/%s',
                 $version,
                 $lowerNameModule,
                 $lowerNameEntity
             );
 
-        $controllerClass->addConstant('ALLOW_GROUPS', preg_replace('/(\w+)/', 'GET_$1', $data['group']));
+        $controllerClass->addConstant('ALLOW_GROUPS', preg_replace('/(\w+)/', 'PUT_$1', $data['group']));
         $entityClass = new Literal($entity.'::class');
         $controllerGroups = new Literal($controllerName.'::ALLOW_GROUPS');
+        $controllerGetName = sprintf('%sGetController', ucfirst($data['entity_name']));;
+        $controllerGetGroups = new Literal($controllerGetName.'::ALLOW_GROUPS');
+        $controllerClass->addAttribute('OA\RequestBody', [
+            'content' => Literal::new('OA\JsonContent', [
+                'ref' => Literal::new('Model', ['type' => $entityClass, 'groups' => $controllerGroups])
+            ])
+        ]);
         $controllerClass->addAttribute('OA\Response', [
             'response' => Response::HTTP_OK,
-            'description' => 'Get item by id',
+            'description' => 'Update item by id',
             'content' => Literal::new('OA\JsonContent', [
                 'properties' => [
                     Literal::new('OA\Property', ['property' => 'message', 'type' => 'string', 'default' => 'ok']),
@@ -52,7 +60,7 @@ class ServiceAddGetController implements ServiceAddControllerInterface
                             'property' => 'item',
                             'ref' => Literal::new(
                                 'Model',
-                                ['type' => $entityClass, 'groups' => $controllerGroups]
+                                ['type' => $entityClass, 'groups' => $controllerGetGroups]
                             ),
                         ]
                     ),
@@ -60,8 +68,19 @@ class ServiceAddGetController implements ServiceAddControllerInterface
             ]),
         ]);
         $controllerClass->addAttribute('OA\Response', [
+            'response' => Response::HTTP_BAD_REQUEST,
+            'description' => 'Update item error validation',
+            'content' => Literal::new('OA\JsonContent', [
+                'properties' => [
+                    Literal::new('OA\Property', ['property' => 'message', 'type' => 'string', 'default' => 'Error message']),
+                    Literal::new('OA\Property', ['property' => 'success', 'type' => 'boolean', 'default' => false]),
+                    Literal::new('OA\Property', ['property' => 'errors', 'type' => 'array', 'default' => []]),
+                ],
+            ]),
+        ]);
+        $controllerClass->addAttribute('OA\Response', [
             'response' => Response::HTTP_EXPECTATION_FAILED,
-            'description' => 'Get item error',
+            'description' => 'Update item error',
             'content' => Literal::new('OA\JsonContent', [
                 'properties' => [
                     Literal::new('OA\Property', ['property' => 'message', 'type' => 'string', 'default' => 'Error message']),
@@ -69,7 +88,7 @@ class ServiceAddGetController implements ServiceAddControllerInterface
                 ],
             ]),
         ]);
-        $method = new Literal('Request::METHOD_GET');
+        $method = new Literal('Request::METHOD_PUT');
         $controllerClass->addAttribute('Route', ['path' => $path, 'methods' => [$method]]);
 
         $invoke = $controllerClass->addMethod('__invoke');
@@ -79,13 +98,19 @@ class ServiceAddGetController implements ServiceAddControllerInterface
 
         $body = '
 try {
-    $item = $service->getOne($request->get(\'id\'), self::ALLOW_GROUPS);
-     
+    $item = $service->update($request->getContent(), $request->get(\'id\'), self::ALLOW_GROUPS, CardGetController::ALLOW_GROUPS);
+    
     return $this->json([
         \'message\' => \'ok\',
         \'success\' => true,
-        \'item\' => $item,
+        \'item\' => $item
     ], Response::HTTP_OK);
+} catch (ValidationException $e) {
+    return $this->json([
+        \'message\' => $e->getMessage(),
+        \'success\' => false,
+        \'errors\' => $e->getErrors()
+    ], Response::HTTP_BAD_REQUEST);
 } catch (Throwable $e) {
     return $this->json([
         \'message\' => $e->getMessage(),
@@ -101,6 +126,6 @@ try {
 
     public function getName(string $entityName): string
     {
-        return sprintf('%sGetController', ucfirst($entityName));
+        return sprintf('%sPutController', ucfirst($entityName));
     }
 }

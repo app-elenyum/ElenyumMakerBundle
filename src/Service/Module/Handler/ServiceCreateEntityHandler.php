@@ -37,14 +37,14 @@ class ServiceCreateEntityHandler implements ServiceCreateInterface
             throw new MissingOptionsException('Not defined "namespace" option');
         }
 
-        $entityFileData = $this->printNamespace(
-            $this->createEntity($namespace, $data)
-        );
-
         $version = $data['version_namespace'];
         $nameEntity = $data['entity_name'];
         $moduleName = $data['module_name'];
         $dirEntityFile = $path.'/'.$moduleName.'/'.$version.'/Entity/'.$nameEntity.'.php';
+
+        $entityFileData = $this->printNamespace(
+            $this->createEntity($namespace, $data)
+        );
 
         $operation = 'created';
         if (file_exists($dirEntityFile)) {
@@ -69,13 +69,13 @@ class ServiceCreateEntityHandler implements ServiceCreateInterface
 
         $fullNamespace = $rootNamespace.'\\'.$moduleName.'\\'.ucfirst($version).'\\Entity';
 
-        $columnData = $data['column'];
         /** added full name */
         $namespace = new PhpNamespace($fullNamespace);
         $namespace->addUse('Doctrine\ORM\Mapping', 'ORM');
         $namespace->addUse('Symfony\Component\Serializer\Annotation\Groups');
         $namespace->addUse('Symfony\Component\Validator\Constraints', 'Assert');
         $namespace->addUse('Doctrine\Common\Collections\Collection');
+        $namespace->addUse('Doctrine\Common\Collections\ArrayCollection');
 
         $class = $namespace->addClass($nameEntity);
 

@@ -15,7 +15,7 @@ class ServiceAddValidator implements ServiceAddToClassInterface
                 continue;
             }
             $this->addValidator(
-                $class->getProperty(mb_strtolower($item['name'])),
+                $class->getProperty(lcfirst($item['name'])),
                 $item['validator']
             );
         }
