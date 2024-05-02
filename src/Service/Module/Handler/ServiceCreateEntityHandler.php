@@ -3,6 +3,7 @@
 namespace Elenyum\Maker\Service\Module\Handler;
 
 use Countable;
+use Elenyum\Maker\Entity\AbstractEntity;
 use Elenyum\Maker\Service\Module\Entity\SetFullNamespaceInterface;
 use Nette\PhpGenerator\PhpNamespace;
 use Nette\PhpGenerator\Printer;
@@ -76,8 +77,10 @@ class ServiceCreateEntityHandler implements ServiceCreateInterface
         $namespace->addUse('Symfony\Component\Validator\Constraints', 'Assert');
         $namespace->addUse('Doctrine\Common\Collections\Collection');
         $namespace->addUse('Doctrine\Common\Collections\ArrayCollection');
+        $namespace->addUse('Elenyum\Maker\Entity\AbstractEntity');
 
         $class = $namespace->addClass($nameEntity);
+        $class->setExtends('AbstractEntity');
 
         $class->addAttribute('ORM\Table', ['name' => $this->prepareTableName($moduleName, $nameEntity, $version)]);
         $class->addAttribute('ORM\Entity');

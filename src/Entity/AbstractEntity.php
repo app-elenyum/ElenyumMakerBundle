@@ -12,11 +12,9 @@ use Exception;
 use ReflectionClass;
 use ReflectionProperty;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Throwable;
 
 abstract class AbstractEntity implements EntityToArrayInterface
 {
-    private array $hashEntity = [];
 
     /**
      * @throws Exception
@@ -25,55 +23,62 @@ abstract class AbstractEntity implements EntityToArrayInterface
     {
         $reflectionClass = new ReflectionClass($this);
         $result = [];
+        $this->hashEntity[$reflectionClass->getName()] = [];
 
         foreach ($reflectionClass->getProperties() as $property) {
+//            array_push($this->hashEntity[$reflectionClass->getName()], $property->getName());
+//            CacheHashEntity::addProperty($reflectionClass->getName(), $property->getName());
+            if ($property->getName() === 'lazyObjectState') {
+                continue;
+            }
             $group = $property->getAttributes(Groups::class);
             if ((!empty($fields) && !in_array($property->getName(), $fields)) &&
                 empty(preg_grep(sprintf('#^%s#', $property->getName()), $fields))) {
                 continue;
             }
 
-            $uintersectResult = array_uintersect(end($group)?->getArguments()[0], $inputGroups, 'strcasecmp');
+            $uintersectResult = [];
+            if (!empty($group)) {
+                $uintersectResult = array_uintersect(end($group)?->getArguments()[0], $inputGroups, 'strcasecmp');
+            }
 
-            if (!empty($uintersectResult)) {
-                $methodVal = 'get'.ucfirst($property->getName());
-                if (method_exists($this, $methodVal)) {
-//                    try {
-                    $val = $this->{$methodVal}();
-//                    } catch (Throwable $e) {
-//                        continue;
-//                    }
+            if (!empty($uintersectResult) && !empty($group)) {
+                continue;
+            }
 
-                    if ($val instanceof DateTimeImmutable) {
-                        $val = $val->format(DATE_ATOM);
-                    }
+            $methodVal = 'get'.ucfirst($property->getName());
+            if (method_exists($this, $methodVal)) {
+                $val = $this->{$methodVal}();
 
-                    $pregForInput = $fields;
-                    if (!empty($fields)) {
-                        $pregForInput = preg_filter(sprintf('#^%s.#', $property->getName()), '', $fields);
-                    }
-                    if ($val instanceof Collection) {
-                        if ($property->getName() === $parent) {
-                            continue;
-                        }
-                        $collection = [];
-                        $parentName = $this->getParent($property);
-                        foreach ($val as $item) {
-                            $collection[] = $item->toArray($inputGroups, $pregForInput, $parentName);
-                        }
-                        $result[$property->getName()] = $collection;
-                    } elseif ((empty($fields) || !empty($pregForInput)) && class_exists($property->getType()->getName())) {
-                        if ($property->getName() === $parent) {
-                            continue;
-                        }
-                        $parentName = $this->getParent($property);
-                        $result[$property->getName()] = $val->toArray($inputGroups, $pregForInput, $parentName);
-                    } else {
-                        $result[$property->getName()] = $val;
-                    }
-                } else {
-                    throw new Exception('Undefined method: '.$methodVal.' for class: '.$this::class);
+                if ($val instanceof DateTimeImmutable) {
+                    $val = $val->format(DATE_ATOM);
                 }
+
+                $pregForInput = $fields;
+                if (!empty($fields)) {
+                    $pregForInput = preg_filter(sprintf('#^%s.#', $property->getName()), '', $fields);
+                }
+                if ($val instanceof Collection) {
+                    if ($property->getName() === $parent) {
+                        continue;
+                    }
+                    $collection = [];
+                    $parentName = $this->getParent($property);
+                    foreach ($val as $item) {
+                        $collection[] = $item->toArray($inputGroups, $pregForInput, $parentName);
+                    }
+                    $result[$property->getName()] = $collection;
+                } elseif ((empty($fields) || !empty($pregForInput)) && class_exists($property->getType()->getName())) {
+                    if ($property->getName() === $parent) {
+                        continue;
+                    }
+                    $parentName = $this->getParent($property);
+                    $result[$property->getName()] = $val->toArray($inputGroups, $pregForInput, $parentName);
+                } else {
+                    $result[$property->getName()] = $val;
+                }
+            } else {
+                throw new Exception('Undefined method: '.$methodVal.' for class: '.$this::class);
             }
 
         }

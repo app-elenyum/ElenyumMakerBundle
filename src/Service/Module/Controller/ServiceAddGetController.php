@@ -14,7 +14,7 @@ class ServiceAddGetController implements ServiceAddControllerInterface
         $namespace->addUse('Symfony\Bundle\FrameworkBundle\Controller\AbstractController');
         $namespace->addUse('Symfony\Component\Routing\Attribute\Route');
         $namespace->addUse('Symfony\Component\HttpFoundation\Response');
-        $namespace->addUse('Elenyum\Maker\HttpFoundation\Request');
+        $namespace->addUse('Symfony\Component\HttpFoundation\Request');
         $namespace->addUse('Elenyum\OpenAPI\Attribute\Tag');
         $namespace->addUse('Elenyum\OpenAPI\Attribute\Model');
         $namespace->addUse('OpenApi\Attributes', 'OA');

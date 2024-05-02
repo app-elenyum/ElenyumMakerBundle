@@ -173,12 +173,27 @@
                   "PUT": [],
                   "DELETE": []
                 }
+              },
+              {
+                "name": "mm",
+                "info": {
+                  "type": "many-to-many",
+                  "targetEntity": "ItemToCard",
+                  "inversedBy": "mm"
+                },
+                "validator": {},
+                "group": {
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
+                }
               }
             ],
             "validator": {
               "Cascade": null
             },
-            "updatedAt": "18.04.2024, 23:25:34"
+            "updatedAt": "27.04.2024, 20:00:12"
           },
           {
             "name": "ItemToCard",
@@ -232,12 +247,28 @@
                   "PUT": [],
                   "DELETE": []
                 }
+              },
+              {
+                "name": "mm",
+                "info": {
+                  "type": "many-to-many",
+                  "targetEntity": "Card",
+                  "inversedBy": "mm",
+                  "isPrimary": false
+                },
+                "validator": {},
+                "group": {
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
+                }
               }
             ],
             "validator": {
               "Cascade": null
             },
-            "updatedAt": "18.04.2024, 23:26:58"
+            "updatedAt": "27.04.2024, 20:01:08"
           }
         ]
       }
