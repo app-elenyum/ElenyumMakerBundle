@@ -8,7 +8,7 @@ use Nette\PhpGenerator\Printer;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\OptionsResolver\Exception\MissingOptionsException;
 
-class ServiceCreateServiceHandler implements ServiceCreateInterface
+class ServiceExecuteServiceHandler implements ServiceExecuteInterface
 {
     public function __construct(
         readonly private Filesystem $filesystem,
@@ -20,7 +20,7 @@ class ServiceCreateServiceHandler implements ServiceCreateInterface
      * @param array $data
      * @return array - return array with created files structure
      */
-    public function create(array $data): array
+    public function execute(array $data): array
     {
         $root = $this->options['root'] ?? null;
         if ($root === null) {
@@ -89,6 +89,8 @@ class ServiceCreateServiceHandler implements ServiceCreateInterface
         $class = $namespace->addClass($serviceName);
 
         $class->setExtends('ElenyumMakerBaseService');
+        /** todo если в настройках включено множественное подключение то создаем его */
+        $class->addConstant('CONNECTION', $data['module_name_lower']);
         $constructor = $class->addMethod('__construct');
 
         $constructor->addParameter('repository')->setType($repositoryName);

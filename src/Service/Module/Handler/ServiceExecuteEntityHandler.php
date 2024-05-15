@@ -3,14 +3,13 @@
 namespace Elenyum\Maker\Service\Module\Handler;
 
 use Countable;
-use Elenyum\Maker\Entity\AbstractEntity;
 use Elenyum\Maker\Service\Module\Entity\SetFullNamespaceInterface;
 use Nette\PhpGenerator\PhpNamespace;
 use Nette\PhpGenerator\Printer;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\OptionsResolver\Exception\MissingOptionsException;
 
-class ServiceCreateEntityHandler implements ServiceCreateInterface
+class ServiceExecuteEntityHandler implements ServiceExecuteInterface
 {
     public function __construct(
         readonly private Filesystem $filesystem,
@@ -23,7 +22,7 @@ class ServiceCreateEntityHandler implements ServiceCreateInterface
      * @param array $data
      * @return array - return array with created files structure
      */
-    public function create(array $data): array
+    public function execute(array $data): array
     {
         $root = $this->options['root'] ?? null;
         if ($root === null) {
@@ -41,7 +40,8 @@ class ServiceCreateEntityHandler implements ServiceCreateInterface
         $version = $data['version_namespace'];
         $nameEntity = $data['entity_name'];
         $moduleName = $data['module_name'];
-        $dirEntityFile = $path.'/'.$moduleName.'/'.$version.'/Entity/'.$nameEntity.'.php';
+        $entityPath = $path.'/'.$moduleName.'/'.$version.'/Entity';
+        $dirEntityFile = $entityPath.'/'.$nameEntity.'.php';
 
         $entityFileData = $this->printNamespace(
             $this->createEntity($namespace, $data)
@@ -52,13 +52,17 @@ class ServiceCreateEntityHandler implements ServiceCreateInterface
             $operation = 'updated';
         }
         $this->filesystem->dumpFile($dirEntityFile, $entityFileData);
-        return [[
-            'module' => $moduleName,
-            'version' => $data['version'],
-            'operation' => $operation,
-            'type' => 'entity',
-            'file' => $dirEntityFile,
-        ]];
+
+        return [
+            [
+                'module' => $moduleName,
+                'version' => $data['version'],
+                'operation' => $operation,
+                'type' => 'entity',
+                'file' => $dirEntityFile,
+                'entityPath' => $entityPath,
+            ],
+        ];
     }
 
     private function createEntity(string $baseNamespace, array $data): PhpNamespace
@@ -73,7 +77,7 @@ class ServiceCreateEntityHandler implements ServiceCreateInterface
         /** added full name */
         $namespace = new PhpNamespace($fullNamespace);
         $namespace->addUse('Doctrine\ORM\Mapping', 'ORM');
-        $namespace->addUse('Symfony\Component\Serializer\Annotation\Groups');
+        $namespace->addUse('Symfony\Component\Serializer\Attribute\Groups');
         $namespace->addUse('Symfony\Component\Validator\Constraints', 'Assert');
         $namespace->addUse('Doctrine\Common\Collections\Collection');
         $namespace->addUse('Doctrine\Common\Collections\ArrayCollection');
@@ -87,6 +91,8 @@ class ServiceCreateEntityHandler implements ServiceCreateInterface
         foreach ($data['validator'] as $validator => $validatorParams) {
             $class->addAttribute('Assert\\' . $validator, $validatorParams ?? []);
         }
+
+//        $class->addConstant('ALLOW_GROUPS', $data['group']);
 
         /** @var \Elenyum\Maker\Service\Module\Entity\ServiceAddToClassInterface $service */
         foreach ($this->entityServices as $service) {

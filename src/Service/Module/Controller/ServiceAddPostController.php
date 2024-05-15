@@ -39,12 +39,9 @@ class ServiceAddPostController implements ServiceAddControllerInterface
 
         $controllerClass->addConstant('ALLOW_GROUPS', preg_replace('/(\w+)/', 'POST_$1', $data['group']));
         $entityClass = new Literal($entity.'::class');
-        $controllerGroups = new Literal($controllerName.'::ALLOW_GROUPS');
-        $controllerGetName = sprintf('%sGetController', ucfirst($data['entity_name']));;
-        $controllerGetGroups = new Literal($controllerGetName.'::ALLOW_GROUPS');
         $controllerClass->addAttribute('OA\RequestBody', [
             'content' => Literal::new('OA\JsonContent', [
-                'ref' => Literal::new('Model', ['type' => $entityClass, 'groups' => $controllerGroups])
+                'ref' => Literal::new('Model', ['type' => $entityClass, 'options' => ['method' => 'POST']])
             ])
         ]);
         $controllerClass->addAttribute('OA\Response', [
@@ -60,7 +57,7 @@ class ServiceAddPostController implements ServiceAddControllerInterface
                             'property' => 'item',
                             'ref' => Literal::new(
                                 'Model',
-                                ['type' => $entityClass, 'groups' => $controllerGetGroups]
+                                ['type' => $entityClass, 'options' => ['method' => 'GET']]
                             ),
                         ]
                     ),
@@ -74,7 +71,15 @@ class ServiceAddPostController implements ServiceAddControllerInterface
                 'properties' => [
                     Literal::new('OA\Property', ['property' => 'message', 'type' => 'string', 'default' => 'Error message']),
                     Literal::new('OA\Property', ['property' => 'success', 'type' => 'boolean', 'default' => false]),
-                    Literal::new('OA\Property', ['property' => 'errors', 'type' => 'array', 'default' => []]),
+                    Literal::new('OA\Property', ['property' => 'errors', 'type' => 'object',
+                        'default' => [
+                            'name' => ['error text','error text 2']
+                        ],
+                        'additionalProperties' => Literal::new('OA\AdditionalProperties', [
+                            'type' => 'array',
+                            'items' => Literal::new('OA\Items', ['type' => 'string']),
+                        ])
+                    ]),
                 ],
             ]),
         ]);
@@ -98,7 +103,9 @@ class ServiceAddPostController implements ServiceAddControllerInterface
 
         $body = '
 try {
-    $item = $service->add($request->getContent(), self::ALLOW_GROUPS, CardGetController::ALLOW_GROUPS);
+    $postGroups = $service->getEntityGroups(\'POST\');
+    $getGroups = $service->getEntityGroups(\'GET\');
+    $item = $service->add($request->getContent(), $postGroups, $getGroups);
     
     return $this->json([
         \'message\' => \'ok\',

@@ -4,6 +4,7 @@ namespace Elenyum\Maker\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
+use Doctrine\Persistence\ManagerRegistry;
 use Elenyum\Maker\Entity\AbstractEntity;
 use Elenyum\Maker\Exception\ValidationException;
 use InvalidArgumentException;
@@ -11,12 +12,14 @@ use LogicException;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
+use ReflectionClass;
 use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
 use Symfony\Component\DependencyInjection\ParameterBag\ContainerBagInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -26,6 +29,8 @@ use Symfony\Contracts\Service\ServiceSubscriberInterface;
 
 abstract class AbstractService implements ServiceSubscriberInterface
 {
+    const CONNECTION = null;
+
     protected ContainerInterface $container;
     protected EntityRepository $repository;
 
@@ -133,7 +138,7 @@ abstract class AbstractService implements ServiceSubscriberInterface
     {
         $serializer = $this->getSerializer();
         $context = [
-            'groups' => $groups,
+            'groups' => array_unique(array_merge($groups, ['Default'])),
             'allow_extra_attributes' => false,
         ];
 
@@ -172,13 +177,34 @@ abstract class AbstractService implements ServiceSubscriberInterface
      */
     public function getEntityManager(): EntityManagerInterface
     {
-        if (!$this->container->has('doctrine.orm.entity_manager')) {
+        if (!$this->container->has(ManagerRegistry::class)) {
             throw new \LogicException(
                 'The orm-pack is not registered in your application. Try running "composer require symfony/orm-pack".'
             );
         }
 
-        return $this->container->get('doctrine.orm.entity_manager');
+        return $this->container->get(ManagerRegistry::class)->getManager(static::CONNECTION);
+    }
+
+    /**
+     * @throws \ReflectionException
+     */
+    public function getEntityGroups(?string $type = null): array
+    {
+        $reflectionClass = new ReflectionClass($this->getRepository()->getClassName());
+
+        $attributeGroups = $reflectionClass->getAttributes(Groups::class);
+        if (isset($attributeGroups[0]) && isset($attributeGroups[0]?->getArguments()[0])) {
+            $groups = $attributeGroups[0]->getArguments()[0];
+            if (!empty($groups) && $type !== null) {
+                $type = mb_strtoupper($type);
+                $groups = preg_replace('/(\w+)/', $type.'_$1', $groups);
+            }
+
+            return array_merge($groups, ['Default']);
+        }
+
+        return [];
     }
 
     /**
@@ -193,6 +219,7 @@ abstract class AbstractService implements ServiceSubscriberInterface
             'serializer' => '?'.SerializerInterface::class,
             'validator' => '?'.ValidatorInterface::class,
             'doctrine.orm.entity_manager' => '?'.EntityManagerInterface::class,
+            ManagerRegistry::class => '?'.ManagerRegistry::class,
         ];
     }
 }

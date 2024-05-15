@@ -9,7 +9,7 @@ use Nette\PhpGenerator\Printer;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\OptionsResolver\Exception\MissingOptionsException;
 
-class ServiceCreateControllerHandler implements ServiceCreateInterface
+class ServiceExecuteControllerHandler implements ServiceExecuteInterface
 {
     public function __construct(
         readonly private Filesystem $filesystem,
@@ -22,7 +22,7 @@ class ServiceCreateControllerHandler implements ServiceCreateInterface
      * @param array $data
      * @return array - return array with created files structure
      */
-    public function create(array $data): array
+    public function execute(array $data): array
     {
         $root = $this->options['root'] ?? null;
         if ($root === null) {
@@ -43,7 +43,7 @@ class ServiceCreateControllerHandler implements ServiceCreateInterface
         $moduleName = $data['module_name'];
         $rootNamespace = ucfirst($namespace);
 
-        $fullNamespace = $rootNamespace.'\\'.$moduleName.'\\'.$version.'\\Controller';
+        $fullNamespace = $rootNamespace.'\\'.$moduleName.'\\'.$version.'\\Controller\\'.$entityName;
         $serviceName = $entityName.'Service';
         $namespaceToService = $rootNamespace.'\\'.$moduleName.'\\'.$version.'\\Service\\'.$serviceName;
         $namespaceToEntity = $rootNamespace.'\\'.$moduleName.'\\'.$version.'\\Entity\\'.$entityName;
@@ -55,12 +55,14 @@ class ServiceCreateControllerHandler implements ServiceCreateInterface
             $phpNamespace = $controllerService->createController($fullNamespace, $serviceName, $entityName, $data, $prefix);
             $phpNamespace->addUse($namespaceToService);
             $phpNamespace->addUse($namespaceToEntity);
+            $controllerName = $controllerService->getName($entityName);
             $dirControllerFile = sprintf(
-                '%s/%s/%s/Controller/%s.php',
+                '%s/%s/%s/Controller/%s/%s.php',
                 $path,
                 $moduleName,
                 $version,
-                $controllerService->getName($entityName)
+                $entityName,
+                $controllerName
             );
             $operation = 'created';
             if (file_exists($dirControllerFile)) {

@@ -7,7 +7,7 @@ use Nette\PhpGenerator\Printer;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\OptionsResolver\Exception\MissingOptionsException;
 
-class ServiceCreateRepositoryHandler implements ServiceCreateInterface
+class ServiceExecuteRepositoryHandler implements ServiceExecuteInterface
 {
     public function __construct(
         readonly private Filesystem $filesystem,
@@ -19,7 +19,7 @@ class ServiceCreateRepositoryHandler implements ServiceCreateInterface
      * @param array $data
      * @return array - return array with created files structure
      */
-    public function create(array $data): array
+    public function execute(array $data): array
     {
         $root = $this->options['root'] ?? null;
         if ($root === null) {

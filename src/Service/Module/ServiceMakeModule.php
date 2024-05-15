@@ -3,13 +3,16 @@
 namespace Elenyum\Maker\Service\Module;
 
 use Countable;
-use Elenyum\Maker\Service\Module\Handler\ServiceCreateInterface;
+use Elenyum\Maker\Service\Module\Handler\ServiceExecuteControllerHandler;
+use Elenyum\Maker\Service\Module\Handler\ServiceExecuteInterface;
+use Elenyum\Maker\Service\Module\Handler\ServiceExecuteServiceHandler;
 
 class ServiceMakeModule
 {
     public function __construct(
-        /** @var ServiceCreateInterface[] */
-        private readonly Countable $create
+        /** @var ServiceExecuteInterface[] */
+        private readonly Countable $create,
+        private ServiceDoctrineSchemaUpdate $doctrineSchemaUpdate
     ) {
     }
 
@@ -19,24 +22,27 @@ class ServiceMakeModule
      */
     public function createModule(array $data): array
     {
-        $result = [];
+        $structures = [];
 
         foreach ($this->prepareData($data) as $item) {
             foreach ($this->create as $create) {
-//                if (
-//                    /** Если не endpoint то не нужно создавать сервисы и контроллеры */
-//                    ($create instanceof ServiceCreateControllerHandler || $create instanceof ServiceCreateServiceHandler)
-//                    && $item['isEndpoint'] === false
-//                ) {
-//                    continue;
-//                }
-                $paths = $create->create($item);
-                $result = array_merge($result, $paths);
+                if (
+                    ($create instanceof ServiceExecuteControllerHandler || $create instanceof ServiceExecuteServiceHandler)
+                    && $item['isEndpoint'] === false
+                ) {
+                    continue;
+                }
+                $paths = $create->execute($item);
+                $structures = array_merge($structures, $paths);
             }
         }
 
+        $entityPaths = array_unique(array_column($structures, 'entityPath'));
 
-        return $result;
+        /** execute sql */
+        $sqls = $this->doctrineSchemaUpdate->execute($entityPaths);
+
+        return [$structures, $sqls];
     }
 
     /**

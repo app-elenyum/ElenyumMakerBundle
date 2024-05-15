@@ -2,10 +2,10 @@
 
 namespace Elenyum\Maker\Service\Module\Handler;
 
-interface ServiceCreateInterface
+interface ServiceExecuteInterface
 {
     /**
      * @return array - return created files path
      */
-    public function create(array $data): array;
+    public function execute(array $data): array;
 }

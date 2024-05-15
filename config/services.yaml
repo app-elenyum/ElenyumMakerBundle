@@ -15,6 +15,10 @@ services:
       - '../src/DependencyInjection/'
       - '../src/ElenyumMakerBundle.php'
 
+  Elenyum\Maker\EventListener\ExceptionListener:
+    tags:
+      - { name: kernel.event_listener, event: kernel.exception }
+
   Elenyum\Maker\Service\Module\Entity\ServiceAddProperty:
     tags:
          - {name: 'elenyum.make.entity.create', priority: 100}
@@ -42,26 +46,26 @@ services:
   Elenyum\Maker\Service\Module\Controller\ServiceAddDeleteController:
     tags: ['elenyum.make.controller.create']
 
-  Elenyum\Maker\Service\Module\Handler\ServiceCreateControllerHandler:
+  Elenyum\Maker\Service\Module\Handler\ServiceExecuteControllerHandler:
     tags:
         - { name: 'elenyum.make.handler.creator', priority: 10 }
     arguments:
       $options: '%elenyum_maker.config%'
       $controllerServices: !tagged_iterator elenyum.make.controller.create
 
-  Elenyum\Maker\Service\Module\Handler\ServiceCreateServiceHandler:
+  Elenyum\Maker\Service\Module\Handler\ServiceExecuteServiceHandler:
     tags:
         - { name: 'elenyum.make.handler.creator', priority: 20 }
     arguments:
       $options: '%elenyum_maker.config%'
 
-  Elenyum\Maker\Service\Module\Handler\ServiceCreateRepositoryHandler:
+  Elenyum\Maker\Service\Module\Handler\ServiceExecuteRepositoryHandler:
     tags:
         - { name: 'elenyum.make.handler.creator', priority: 30 }
     arguments:
       $options: '%elenyum_maker.config%'
 
-  Elenyum\Maker\Service\Module\Handler\ServiceCreateEntityHandler:
+  Elenyum\Maker\Service\Module\Handler\ServiceExecuteEntityHandler:
     tags:
         - { name: 'elenyum.make.handler.creator', priority: 40 }
     arguments:
@@ -72,3 +76,14 @@ services:
   Elenyum\Maker\Service\Module\ServiceMakeModule:
     arguments:
       $create: !tagged_iterator elenyum.make.handler.creator
+
+  Elenyum\Maker\Service\Module\Handler\ServiceExecuteDoctrineUpdateConfig:
+    tags:
+      - { name: 'elenyum.make.handler.creator', priority: 50 }
+    arguments:
+      #     @see ../src/DependencyInjection/ElenyumMakerExtension.php:19
+      $options: '%elenyum_maker.config%'
+
+  Elenyum\Maker\Service\Module\ServiceDoctrineSchemaUpdate:
+    arguments:
+      $entityManagerProvider: '@doctrine.orm.command.entity_manager_provider'

@@ -15,7 +15,6 @@ class ServiceAddGroup implements ServiceAddToClassInterface
     public function create(ClassType $class, array $data): ClassType
     {
         $dataColumn = $data['column'];
-//        dd($data);
         if (!empty($data['group'])) {
             $class->addAttribute('Groups', [$data['group']]);
         }
@@ -54,6 +53,6 @@ class ServiceAddGroup implements ServiceAddToClassInterface
             $result = array_merge($result, array_map(fn($g) => $type.'_'.$g, $group));
         }
 
-        return $result;
+        return $result ?: ['Default'];
     }
 }

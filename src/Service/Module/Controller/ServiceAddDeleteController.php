@@ -30,16 +30,13 @@ class ServiceAddDeleteController implements ServiceAddControllerInterface
         $controllerClass->addAttribute('Tag', ['name' => $lowerNameModule]);
         $version = str_replace('.', '_', $data['version']);
         $path = (!empty($prefix) ? "/{$prefix}" : '').sprintf(
-                '/%s/%s/%s',
+                '/%s/%s/%s/{id<\d+>}',
                 $version,
                 $lowerNameModule,
                 $lowerNameEntity
             );
 
-        $controllerClass->addConstant('ALLOW_GROUPS', preg_replace('/(\w+)/', 'DELETE_$1', $data['group']));
         $entityClass = new Literal($entity.'::class');
-        $controllerGetName = sprintf('%sGetController', ucfirst($data['entity_name']));;
-        $controllerGetGroups = new Literal($controllerGetName.'::ALLOW_GROUPS');
 
         $controllerClass->addAttribute(
             'OA\Parameter',
@@ -47,7 +44,7 @@ class ServiceAddDeleteController implements ServiceAddControllerInterface
         );
         $controllerClass->addAttribute('OA\Response', [
             'response' => Response::HTTP_OK,
-            'description' => 'Add item',
+            'description' => 'Deleted item',
             'content' => Literal::new('OA\JsonContent', [
                 'properties' => [
                     Literal::new('OA\Property', ['property' => 'message', 'type' => 'string', 'default' => 'ok']),
@@ -58,7 +55,7 @@ class ServiceAddDeleteController implements ServiceAddControllerInterface
                             'property' => 'item',
                             'ref' => Literal::new(
                                 'Model',
-                                ['type' => $entityClass, 'groups' => $controllerGetGroups]
+                                ['type' => $entityClass, 'options' => ['method' => 'GET']]
                             ),
                         ]
                     ),
@@ -85,7 +82,8 @@ class ServiceAddDeleteController implements ServiceAddControllerInterface
 
         $body = '
 try {
-    $item = $service->delete($request->get(\'id\'), CardGetController::ALLOW_GROUPS);
+    $groups = $service->getEntityGroups(\'GET\');
+    $item = $service->delete($request->get(\'id\'), $groups);
 
     return $this->json([
         \'message\' => \'ok\',

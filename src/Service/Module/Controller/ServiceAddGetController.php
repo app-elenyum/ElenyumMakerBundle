@@ -36,9 +36,7 @@ class ServiceAddGetController implements ServiceAddControllerInterface
                 $lowerNameEntity
             );
 
-        $controllerClass->addConstant('ALLOW_GROUPS', preg_replace('/(\w+)/', 'GET_$1', $data['group']));
         $entityClass = new Literal($entity.'::class');
-        $controllerGroups = new Literal($controllerName.'::ALLOW_GROUPS');
         $controllerClass->addAttribute('OA\Response', [
             'response' => Response::HTTP_OK,
             'description' => 'Get item by id',
@@ -52,7 +50,7 @@ class ServiceAddGetController implements ServiceAddControllerInterface
                             'property' => 'item',
                             'ref' => Literal::new(
                                 'Model',
-                                ['type' => $entityClass, 'groups' => $controllerGroups]
+                                ['type' => $entityClass, 'options' => ['method' => 'GET']]
                             ),
                         ]
                     ),
@@ -69,6 +67,10 @@ class ServiceAddGetController implements ServiceAddControllerInterface
                 ],
             ]),
         ]);
+        $controllerClass->addAttribute(
+            'OA\Parameter',
+            ['name' => 'id', 'in' => 'path', 'schema' => Literal::new('OA\Schema', ['type' => 'integer'])]
+        );
         $method = new Literal('Request::METHOD_GET');
         $controllerClass->addAttribute('Route', ['path' => $path, 'methods' => [$method]]);
 
@@ -79,7 +81,8 @@ class ServiceAddGetController implements ServiceAddControllerInterface
 
         $body = '
 try {
-    $item = $service->getOne($request->get(\'id\'), self::ALLOW_GROUPS);
+    $groups = $service->getEntityGroups(\'GET\');
+    $item = $service->getOne($request->get(\'id\'), $groups);
      
     return $this->json([
         \'message\' => \'ok\',

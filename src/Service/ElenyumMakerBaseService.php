@@ -18,11 +18,13 @@ class ElenyumMakerBaseService extends AbstractService
     /**
      * @param int $id
      * @param array $groups
-     * @param array $fields
+     * @param array|null $fields
      *
      * @return array
      *
-     * @throws \Exception
+     * @throws EntityNotImplementAbstractEntityException
+     * @throws NotFoundByIdException
+     * @throws Exception
      */
     public function getOne(int $id, array $groups, ?array $fields = null): array
     {
@@ -35,12 +37,20 @@ class ElenyumMakerBaseService extends AbstractService
         if (!$item instanceof AbstractEntity) {
             throw new EntityNotImplementAbstractEntityException($this->getRepository()->getClassName());
         }
-//        if ($this->getUser() !== null) {
-//            $this->isGranted('GET', $item);
-//        }
+
         return $item->toArray($groups, $fields);
     }
 
+    /**
+     * @param int $offset
+     * @param int $limit
+     * @param array $orderBy
+     * @param array $groups
+     * @param array $filter
+     * @param array $fields
+     * @return array
+     * @throws Exception
+     */
     public function getList(
         int $offset,
         int $limit,
@@ -48,7 +58,7 @@ class ElenyumMakerBaseService extends AbstractService
         array $groups,
         array $filter = [],
         array $fields = []
-    ) {
+    ): array {
         $total = $this->getRepository()->count($filter);
         $items = $this->getRepository()->findBy($filter, $orderBy, $limit, $offset);
 
@@ -83,33 +93,39 @@ class ElenyumMakerBaseService extends AbstractService
         return preg_replace('/:(\s*)([a-zA-Z0-9_]+)(\s*[},\]])/', ':$1"$2"$3', $json);
     }
 
-    /** todo проблема может быть если связали с одним потом связываем с другим
+    /**
      * @param object $entity
-     * @return object
+     * @param bool $isInner
+     * @return void
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      * @throws ORMException
      * @throws OptimisticLockException
+     * @throws NotFoundByIdException
      */
-    private function findOrPersist(object &$entity): object
+    private function findOrPersist(object &$entity, bool $isInner = false): void
     {
         $entityId = $entity->id ?? null;
+        if ($isInner && $entityId !== null) {
+            $entity = $this->getEntityManager()->find($entity::class, $entityId);
+            if ($entity === null) {
+                throw new NotFoundByIdException($entityId, $this->getRepository()->getClassName());
+            }
+            return;
+        }
         foreach ($entity as $key => &$item) {
             if (is_object($item)) {
                 if ($item instanceof Collection && $item->count() > 0) {
                     $cloneCollection = clone $item;
                     $item->clear();
+
                     foreach ($cloneCollection as &$cEntity) {
-                        $cEntity = $this->findOrPersist($cEntity);
+                        $this->findOrPersist($cEntity, true);
+
                         $entity->{'add'.ucfirst($key)}($cEntity);
                     }
-                } else {
-                    $id = $item->id ?? null;
-                    if ($id !== null) {
-                        $item = $this->getEntityManager()->find($item::class, $id);
-                    } else {
-                        $this->getEntityManager()->persist($item);
-                    }
+                } elseif (!$item instanceof Collection) {
+                    $this->findOrPersist($item, true);
                 }
             }
         }
@@ -118,9 +134,10 @@ class ElenyumMakerBaseService extends AbstractService
             $this->getEntityManager()->persist($entity);
         } else {
             $entity = $this->getEntityManager()->find($entity::class, $entityId);
+            if ($entity === null) {
+                throw new NotFoundByIdException($entityId, $this->getRepository()->getClassName());
+            }
         }
-
-        return $entity;
     }
 
     /**
@@ -132,7 +149,7 @@ class ElenyumMakerBaseService extends AbstractService
      * @throws NotFoundExceptionInterface
      * @throws ORMException
      * @throws OptimisticLockException
-     * @throws ValidationException
+     * @throws ValidationException|NotFoundByIdException
      */
     public function add(mixed $data, array $groups = [], array $outputGroups = []): array
     {
@@ -141,7 +158,7 @@ class ElenyumMakerBaseService extends AbstractService
         if (!empty($validate)) {
             throw new ValidationException($validate);
         }
-        $entityId = $entity->id ?? null;
+        $entityId = $entityResult->id ?? null;
         if ($entityId !== null) {
             throw new Exception(
                 'Cannot use the \'id\' key if you want to add an entity. Please use the "PUT" method for updates or remove the \'id\' key from your request.'

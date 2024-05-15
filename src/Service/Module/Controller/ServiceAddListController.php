@@ -35,10 +35,8 @@ class ServiceAddListController implements ServiceAddControllerInterface
                 $lowerNameModule,
                 $lowerNameEntity
             );
-        
-        $controllerClass->addConstant('ALLOW_GROUPS', preg_replace('/(\w+)/', 'GET_$1', $data['group']));
+
         $entityClass = new Literal($entity.'::class');
-        $controllerGroups = new Literal($controllerName.'::ALLOW_GROUPS');
         $controllerClass->addAttribute('OA\Response', [
             'response' => Response::HTTP_OK,
             'description' => 'Get list items',
@@ -51,7 +49,7 @@ class ServiceAddListController implements ServiceAddControllerInterface
                         [
                             'property' => 'items',
                             'type' => 'array',
-                            'items' => Literal::new('OA\Items', ['ref' => Literal::new('Model', ['type' => $entityClass, 'groups' => $controllerGroups])]),
+                            'items' => Literal::new('OA\Items', ['ref' => Literal::new('Model', ['type' => $entityClass, 'options' => ['method' => 'GET']])]),
                         ]
                     ),
                     Literal::new('OA\Property', [
@@ -103,11 +101,12 @@ try {
     $orderBy = $request->get(\'orderBy\', \'{}\');
     $filter = $request->get(\'filter\', \'{}\');
     $fields = $request->get(\'fields\', \'[]\');
+    $groups = $service->getEntityGroups(\'GET\');
     [$total, $items] = $service->getList(
         offset: $offset,
         limit: $limit,
         orderBy: json_decode($service->prepareJsonFormat($orderBy), true) ?? [],
-        groups: self::ALLOW_GROUPS,
+        groups: $groups,
         filter: json_decode($service->prepareJsonFormat($filter), true) ?? [],
         fields: json_decode($service->prepareJsonFormat($fields), true) ?? [],
     );

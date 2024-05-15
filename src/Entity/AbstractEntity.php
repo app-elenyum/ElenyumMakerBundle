@@ -15,34 +15,37 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 abstract class AbstractEntity implements EntityToArrayInterface
 {
-
     /**
      * @throws Exception
      */
-    public function toArray(array $inputGroups, ?array $fields = null, ?string $parent = null): array
+    public function toArray(array $inputGroups, ?array $fields = null, array $parents = []): array
     {
         $reflectionClass = new ReflectionClass($this);
         $result = [];
-        $this->hashEntity[$reflectionClass->getName()] = [];
 
         foreach ($reflectionClass->getProperties() as $property) {
-//            array_push($this->hashEntity[$reflectionClass->getName()], $property->getName());
-//            CacheHashEntity::addProperty($reflectionClass->getName(), $property->getName());
             if ($property->getName() === 'lazyObjectState') {
                 continue;
             }
             $group = $property->getAttributes(Groups::class);
-            if ((!empty($fields) && !in_array($property->getName(), $fields)) &&
-                empty(preg_grep(sprintf('#^%s#', $property->getName()), $fields))) {
+            if (
+                (!empty($fields) && !in_array($property->getName(), $fields)) &&
+                empty(preg_grep(sprintf('#^%s#', $property->getName()), $fields))
+            ) {
                 continue;
             }
 
             $uintersectResult = [];
             if (!empty($group)) {
-                $uintersectResult = array_uintersect(end($group)?->getArguments()[0], $inputGroups, 'strcasecmp');
+                $uintersectResult = array_uintersect(
+                    end($group)?->getArguments()[0],
+                    $inputGroups, 'strcasecmp'
+                );
             }
-
-            if (!empty($uintersectResult) && !empty($group)) {
+            if (empty($uintersectResult) && !empty($group)) {
+                continue;
+            }
+            if (in_array($property->getName(), $parents)) {
                 continue;
             }
 
@@ -59,21 +62,17 @@ abstract class AbstractEntity implements EntityToArrayInterface
                     $pregForInput = preg_filter(sprintf('#^%s.#', $property->getName()), '', $fields);
                 }
                 if ($val instanceof Collection) {
-                    if ($property->getName() === $parent) {
-                        continue;
-                    }
                     $collection = [];
                     $parentName = $this->getParent($property);
+                    $parents[] = $parentName;
                     foreach ($val as $item) {
-                        $collection[] = $item->toArray($inputGroups, $pregForInput, $parentName);
+                        $collection[] = $item->toArray($inputGroups, $pregForInput, $parents);
                     }
                     $result[$property->getName()] = $collection;
-                } elseif ((empty($fields) || !empty($pregForInput)) && class_exists($property->getType()->getName())) {
-                    if ($property->getName() === $parent) {
-                        continue;
-                    }
+                } elseif ((empty($fields) || !empty($pregForInput)) && class_exists($property->getType()->getName()) && $val !== null) {
                     $parentName = $this->getParent($property);
-                    $result[$property->getName()] = $val->toArray($inputGroups, $pregForInput, $parentName);
+                    $parents[] = $parentName;
+                    $result[$property->getName()] = $val->toArray($inputGroups, $pregForInput, $parents);
                 } else {
                     $result[$property->getName()] = $val;
                 }

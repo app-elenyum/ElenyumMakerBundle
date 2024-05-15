@@ -14,16 +14,23 @@ class ServiceAddProperty implements ServiceAddToClassInterface, SetFullNamespace
      */
     private string $namespace;
 
+    private array $dataEntity = [];
+
     /**
      * @throws Exception
      */
     public function create(ClassType $class, array $data): ClassType
     {
+        $this->dataEntity['entity'] = $data['entity_name_lower'];
+        $this->dataEntity['version'] = mb_strtolower($data['version_namespace']);
+        $this->dataEntity['module'] = mb_strtolower($data['module_name_lower']);
+
         $dataColumn = $data['column'];
         $this->addConstruct($class, $dataColumn);
         foreach ($dataColumn as $column) {
             $columnName = lcfirst($column['name']);
-            $addProperty = $class->addProperty($columnName);
+            $addProperty = $class->addProperty($columnName, null);
+
             $getPhpType = $this->getPhpType($column['info']['type'], $column['info']['targetEntity'] ?? null);
             $addProperty->setType('?'.$getPhpType);
             $this->addDoctrineAttributeForProperty($addProperty, $column);
@@ -43,20 +50,26 @@ class ServiceAddProperty implements ServiceAddToClassInterface, SetFullNamespace
             'one-to-many',
             'many-to-many',
         ];
-
+        $column = $columnData['info']['mappedBy'] ?? $columnData['info']['inversedBy'];
         if (in_array($columnData['info']['type'], $typeIsArrayCollection)) {
             $methodAddName = 'add'.ucfirst($propertyName);
             $add = $class->addMethod($methodAddName);
             $add->addParameter($propertyName)->setType('\\'.$this->namespace.'\\'.$columnData['info']['targetEntity']);
+
             $add->addBody(
-                sprintf('
+                sprintf(
+                    '
 if (!$this->%1$s->contains($%1$s)) {
     $this->%1$s->add($%1$s);
-    $%1$s->set%2$s($this);
+    $%1$s->%3$s%2$s($this);
 } 
 
 return $this;
-', $propertyName, ucfirst($columnData['info']['inversedBy']))
+',
+                    $propertyName,
+                    ucfirst($column),
+                    $columnData['info']['type'] === 'many-to-many' ? 'add' : 'set'
+                )
             );
             $add->setReturnType('self');
 
@@ -115,33 +128,46 @@ return $this;
                     'inversedBy' => $columnData['info']['inversedBy']
                 ]);
                 $property->addAttribute('ORM\JoinColumn', [
-                    'name' => mb_strtolower($columnData['info']['inversedBy']).'_id',
+                    'name' => mb_strtolower($property->getName()).'_id',
                     'referencedColumnName' => 'id',
+                    'nullable' => true,
                     'onDelete' => 'SET NULL',
                 ]);
             })($property, $columnData),
             'one-to-one' => (function (Property $property, $columnData) {
-                $property->addAttribute('ORM\OneToOne', [
-                    'targetEntity' => $this->namespace.'\\'.$columnData['info']['targetEntity'],
-                    'mappedBy' => $columnData['info']['inversedBy']
-                ]);
-                $property->addAttribute('ORM\JoinColumn', [
-                    'name' => mb_strtolower($columnData['info']['inversedBy']).'_id',
-                    'referencedColumnName' => 'id',
-                    'onDelete' => 'SET NULL',
-                ]);
+                $parameters['targetEntity'] = $this->namespace.'\\'.$columnData['info']['targetEntity'];
+                if (isset($columnData['info']['mappedBy'])) {
+                    $parameters['inversedBy'] = lcfirst($columnData['info']['mappedBy']);
+                } else {
+                    $parameters['inversedBy'] = lcfirst($columnData['info']['inversedBy']);
+                    $property->addAttribute('ORM\JoinColumn', [
+                        'name' => mb_strtolower($property->getName()).'_id',
+                        'referencedColumnName' => 'id',
+                        'nullable' => true,
+                        'onDelete' => 'SET NULL',
+                    ]);
+                }
+                $property->addAttribute('ORM\OneToOne', $parameters);
+
             })($property, $columnData),
 
             'many-to-many' => (function (Property $property, $columnData) {
-                $property->addAttribute('ORM\ManyToMany', [
-                    'targetEntity' => $this->namespace.'\\'.$columnData['info']['targetEntity'],
-                    'mappedBy' => $columnData['info']['inversedBy']
-                ]);
+                $parameters['targetEntity'] = $this->namespace.'\\'.$columnData['info']['targetEntity'];
+                if (isset($columnData['info']['mappedBy'])) {
+                    $parameters['mappedBy'] = $columnData['info']['mappedBy'];
+                } else {
+                    $property->addAttribute('ORM\JoinTable', ['name' => $this->prepareTableName($columnData['info']['targetEntity'])]);
+                    $property->addAttribute('ORM\JoinColumn', ['nullable' => true]);
+
+                    $parameters['inversedBy'] = $columnData['info']['inversedBy'];
+                }
+
+                $property->addAttribute('ORM\ManyToMany', $parameters);
             })($property, $columnData),
             'one-to-many' => (function (Property $property, $columnData) {
                 $property->addAttribute('ORM\OneToMany', [
                     'targetEntity' => $this->namespace.'\\'.$columnData['info']['targetEntity'],
-                    'mappedBy' => $columnData['info']['inversedBy']
+                    'mappedBy' => $columnData['info']['mappedBy']
                 ]);
             })($property, $columnData),
         };
@@ -197,4 +223,15 @@ return $this;
             }
         }
     }
+
+    private function prepareTableName(string $entity): string
+    {
+        $result = $this->dataEntity['entity'].'_'.$entity;
+
+        $result .= '__'.$this->dataEntity['version'];
+        $result .= '__'.$this->dataEntity['module'];
+
+        return mb_strtolower($result);
+    }
+
 }

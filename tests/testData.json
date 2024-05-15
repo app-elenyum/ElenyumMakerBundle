@@ -1,17 +1,13 @@
 [
   {
-    "name": "Shop_NEW",
+    "name": "Renta",
     "version": {
       "v1.0": {
         "entity": [
           {
-            "name": "Item",
+            "name": "Property",
             "isEndpoint": true,
-            "group": [
-              "adm",
-              "usr",
-              "mng"
-            ],
+            "group": [],
             "column": [
               {
                 "name": "id",
@@ -30,72 +26,19 @@
                 }
               },
               {
-                "name": "itemToCard",
-                "info": {
-                  "type": "many-to-one",
-                  "targetEntity": "ItemToCard",
-                  "inversedBy": "item",
-                  "isPrimary": false
-                },
-                "validator": {},
-                "group": {
-                  "GET": [
-                    "adm",
-                    "usr",
-                    "mng"
-                  ],
-                  "POST": [
-                    "adm",
-                    "usr",
-                    "mng"
-                  ],
-                  "PUT": [
-                    "adm",
-                    "usr",
-                    "mng"
-                  ],
-                  "DELETE": [
-                    "adm",
-                    "usr",
-                    "mng"
-                  ]
-                }
-              },
-              {
                 "name": "name",
                 "info": {
                   "type": "string",
                   "targetEntity": null,
-                  "inversedBy": "item",
+                  "inversedBy": null,
                   "isPrimary": false
                 },
-                "validator": {
-                  "Length": {
-                    "min": 1,
-                    "max": 100
-                  }
-                },
+                "validator": {},
                 "group": {
-                  "GET": [
-                    "adm",
-                    "usr",
-                    "mng"
-                  ],
-                  "POST": [
-                    "adm",
-                    "usr",
-                    "mng"
-                  ],
-                  "PUT": [
-                    "adm",
-                    "usr",
-                    "mng"
-                  ],
-                  "DELETE": [
-                    "adm",
-                    "usr",
-                    "mng"
-                  ]
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
                 }
               },
               {
@@ -106,50 +49,21 @@
                   "inversedBy": null,
                   "isPrimary": false
                 },
-                "validator": {
-                  "NoSuspiciousCharacters": null
-                },
+                "validator": {},
                 "group": {
-                  "GET": [
-                    "adm",
-                    "usr",
-                    "mng"
-                  ],
-                  "POST": [
-                    "adm",
-                    "usr",
-                    "mng"
-                  ],
-                  "PUT": [
-                    "adm",
-                    "usr",
-                    "mng"
-                  ],
-                  "DELETE": [
-                    "adm",
-                    "usr",
-                    "mng"
-                  ]
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
                 }
-              }
-            ],
-            "validator": {
-              "Cascade": null
-            },
-            "updatedAt": "19.04.2024, 21:25:48"
-          },
-          {
-            "name": "Card",
-            "isEndpoint": true,
-            "group": [],
-            "column": [
+              },
               {
-                "name": "id",
+                "name": "price",
                 "info": {
-                  "type": "integer",
-                  "isPrimary": true,
+                  "type": "float",
                   "targetEntity": null,
-                  "inversedBy": null
+                  "inversedBy": null,
+                  "isPrimary": false
                 },
                 "validator": {},
                 "group": {
@@ -160,26 +74,185 @@
                 }
               },
               {
-                "name": "itemToCard",
+                "name": "num_bathrooms",
+                "info": {
+                  "type": "integer",
+                  "targetEntity": null,
+                  "inversedBy": null,
+                  "isPrimary": false
+                },
+                "validator": {},
+                "group": {
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
+                }
+              },
+              {
+                "name": "num_rooms",
+                "info": {
+                  "type": "integer",
+                  "targetEntity": null,
+                  "inversedBy": null,
+                  "isPrimary": false
+                },
+                "validator": {},
+                "group": {
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
+                }
+              },
+              {
+                "name": "max_persons",
+                "info": {
+                  "type": "integer",
+                  "targetEntity": null,
+                  "inversedBy": null,
+                  "isPrimary": false
+                },
+                "validator": {},
+                "group": {
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
+                }
+              },
+              {
+                "name": "is_last_floor",
+                "info": {
+                  "type": "integer",
+                  "targetEntity": null,
+                  "inversedBy": null,
+                  "isPrimary": false
+                },
+                "validator": {},
+                "group": {
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
+                }
+              },
+              {
+                "name": "floor",
+                "info": {
+                  "type": "integer",
+                  "targetEntity": null,
+                  "inversedBy": null,
+                  "isPrimary": false
+                },
+                "validator": {},
+                "group": {
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
+                }
+              },
+              {
+                "name": "square",
+                "info": {
+                  "type": "integer",
+                  "targetEntity": null,
+                  "inversedBy": null,
+                  "isPrimary": false
+                },
+                "validator": {},
+                "group": {
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
+                }
+              },
+              {
+                "name": "type",
+                "info": {
+                  "type": "string",
+                  "targetEntity": null,
+                  "inversedBy": null,
+                  "isPrimary": false
+                },
+                "validator": {},
+                "group": {
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
+                }
+              },
+              {
+                "name": "address",
+                "info": {
+                  "type": "one-to-one",
+                  "targetEntity": "Address",
+                  "inversedBy": "property",
+                  "isPrimary": false
+                },
+                "validator": {},
+                "group": {
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
+                }
+              },
+              {
+                "name": "rules",
+                "info": {
+                  "type": "many-to-many",
+                  "targetEntity": "Rule",
+                  "mappedBy": "properties"
+                },
+                "validator": {},
+                "group": {
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
+                }
+              },
+              {
+                "name": "equipments",
+                "info": {
+                  "type": "many-to-many",
+                  "targetEntity": "Equipment",
+                  "mappedBy": "properties"
+                },
+                "validator": {},
+                "group": {
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
+                }
+              },
+              {
+                "name": "files",
+                "info": {
+                  "type": "one-to-many",
+                  "targetEntity": "File",
+                  "mappedBy": "property"
+                },
+                "validator": {},
+                "group": {
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
+                }
+              },
+              {
+                "name": "state",
                 "info": {
                   "type": "many-to-one",
-                  "targetEntity": "ItemToCard",
-                  "inversedBy": "card"
-                },
-                "validator": {},
-                "group": {
-                  "GET": [],
-                  "POST": [],
-                  "PUT": [],
-                  "DELETE": []
-                }
-              },
-              {
-                "name": "mm",
-                "info": {
-                  "type": "many-to-many",
-                  "targetEntity": "ItemToCard",
-                  "inversedBy": "mm"
+                  "targetEntity": "State",
+                  "inversedBy": "properties",
+                  "isPrimary": false
                 },
                 "validator": {},
                 "group": {
@@ -193,10 +266,10 @@
             "validator": {
               "Cascade": null
             },
-            "updatedAt": "27.04.2024, 20:00:12"
+            "updatedAt": "09.05.2024, 22:13:52"
           },
           {
-            "name": "ItemToCard",
+            "name": "Address",
             "isEndpoint": true,
             "group": [],
             "column": [
@@ -217,11 +290,11 @@
                 }
               },
               {
-                "name": "item",
+                "name": "postal_code",
                 "info": {
-                  "type": "one-to-many",
-                  "targetEntity": "Item",
-                  "inversedBy": "itemToCard",
+                  "type": "string",
+                  "targetEntity": null,
+                  "inversedBy": null,
                   "isPrimary": false
                 },
                 "validator": {},
@@ -233,11 +306,11 @@
                 }
               },
               {
-                "name": "card",
+                "name": "street",
                 "info": {
-                  "type": "one-to-many",
-                  "targetEntity": "Card",
-                  "inversedBy": "itemToCard",
+                  "type": "string",
+                  "targetEntity": null,
+                  "inversedBy": null,
                   "isPrimary": false
                 },
                 "validator": {},
@@ -249,11 +322,312 @@
                 }
               },
               {
-                "name": "mm",
+                "name": "latitude",
                 "info": {
-                  "type": "many-to-many",
-                  "targetEntity": "Card",
-                  "inversedBy": "mm",
+                  "type": "float",
+                  "targetEntity": null,
+                  "inversedBy": null,
+                  "isPrimary": false
+                },
+                "validator": {},
+                "group": {
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
+                }
+              },
+              {
+                "name": "longtitude",
+                "info": {
+                  "type": "float",
+                  "targetEntity": null,
+                  "inversedBy": null,
+                  "isPrimary": false
+                },
+                "validator": {},
+                "group": {
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
+                }
+              },
+              {
+                "name": "property",
+                "info": {
+                  "type": "one-to-one",
+                  "targetEntity": "Property",
+                  "mappedBy": "address"
+                },
+                "validator": {},
+                "group": {
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
+                }
+              },
+              {
+                "name": "num_door",
+                "info": {
+                  "type": "integer",
+                  "targetEntity": null,
+                  "inversedBy": null,
+                  "isPrimary": false
+                },
+                "validator": {},
+                "group": {
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
+                }
+              },
+              {
+                "name": "city",
+                "info": {
+                  "type": "one-to-many",
+                  "targetEntity": "City",
+                  "mappedBy": "address"
+                },
+                "validator": {},
+                "group": {
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
+                }
+              }
+            ],
+            "validator": {
+              "Cascade": null
+            },
+            "updatedAt": "09.05.2024, 21:14:21"
+          },
+          {
+            "name": "City",
+            "isEndpoint": true,
+            "group": [],
+            "column": [
+              {
+                "name": "id",
+                "info": {
+                  "type": "integer",
+                  "isPrimary": true,
+                  "targetEntity": null,
+                  "inversedBy": null
+                },
+                "validator": {},
+                "group": {
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
+                }
+              },
+              {
+                "name": "name",
+                "info": {
+                  "type": "string",
+                  "targetEntity": null,
+                  "inversedBy": null,
+                  "isPrimary": false
+                },
+                "validator": {},
+                "group": {
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
+                }
+              },
+              {
+                "name": "code",
+                "info": {
+                  "type": "string",
+                  "targetEntity": null,
+                  "inversedBy": "city",
+                  "isPrimary": false
+                },
+                "validator": {},
+                "group": {
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
+                }
+              },
+              {
+                "name": "address",
+                "info": {
+                  "type": "many-to-one",
+                  "targetEntity": "Address",
+                  "inversedBy": "city",
+                  "isPrimary": false
+                },
+                "validator": {},
+                "group": {
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
+                }
+              },
+              {
+                "name": "province",
+                "info": {
+                  "type": "one-to-many",
+                  "targetEntity": "Province",
+                  "mappedBy": "city"
+                },
+                "validator": {},
+                "group": {
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
+                }
+              }
+            ],
+            "validator": {
+              "Cascade": null
+            },
+            "updatedAt": "09.05.2024, 21:18:48"
+          },
+          {
+            "name": "Province",
+            "isEndpoint": true,
+            "group": [],
+            "column": [
+              {
+                "name": "id",
+                "info": {
+                  "type": "integer",
+                  "isPrimary": true,
+                  "targetEntity": null,
+                  "inversedBy": null
+                },
+                "validator": {},
+                "group": {
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
+                }
+              },
+              {
+                "name": "name",
+                "info": {
+                  "type": "string",
+                  "targetEntity": null,
+                  "inversedBy": null,
+                  "isPrimary": false
+                },
+                "validator": {},
+                "group": {
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
+                }
+              },
+              {
+                "name": "code",
+                "info": {
+                  "type": "string",
+                  "targetEntity": null,
+                  "inversedBy": null,
+                  "isPrimary": false
+                },
+                "validator": {},
+                "group": {
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
+                }
+              },
+              {
+                "name": "city",
+                "info": {
+                  "type": "many-to-one",
+                  "targetEntity": "City",
+                  "inversedBy": "province",
+                  "isPrimary": false
+                },
+                "validator": {},
+                "group": {
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
+                }
+              },
+              {
+                "name": "autonomouscommunities",
+                "info": {
+                  "type": "one-to-many",
+                  "targetEntity": "AutonomousCommunities",
+                  "mappedBy": "province"
+                },
+                "validator": {},
+                "group": {
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
+                }
+              }
+            ],
+            "validator": {
+              "Cascade": null
+            },
+            "updatedAt": "09.05.2024, 21:22:40"
+          },
+          {
+            "name": "AutonomousCommunities",
+            "isEndpoint": true,
+            "group": [],
+            "column": [
+              {
+                "name": "id",
+                "info": {
+                  "type": "integer",
+                  "isPrimary": true,
+                  "targetEntity": null,
+                  "inversedBy": null
+                },
+                "validator": {},
+                "group": {
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
+                }
+              },
+              {
+                "name": "name",
+                "info": {
+                  "type": "string",
+                  "targetEntity": null,
+                  "inversedBy": null,
+                  "isPrimary": false
+                },
+                "validator": {},
+                "group": {
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
+                }
+              },
+              {
+                "name": "province",
+                "info": {
+                  "type": "many-to-one",
+                  "targetEntity": "Province",
+                  "inversedBy": "autonomouscommunities",
                   "isPrimary": false
                 },
                 "validator": {},
@@ -268,7 +642,354 @@
             "validator": {
               "Cascade": null
             },
-            "updatedAt": "27.04.2024, 20:01:08"
+            "updatedAt": "09.05.2024, 21:25:31"
+          },
+          {
+            "name": "Rule",
+            "isEndpoint": true,
+            "group": [],
+            "column": [
+              {
+                "name": "id",
+                "info": {
+                  "type": "integer",
+                  "isPrimary": true,
+                  "targetEntity": null,
+                  "inversedBy": null
+                },
+                "validator": {},
+                "group": {
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
+                }
+              },
+              {
+                "name": "name",
+                "info": {
+                  "type": "string",
+                  "targetEntity": null,
+                  "inversedBy": null,
+                  "isPrimary": false
+                },
+                "validator": {},
+                "group": {
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
+                }
+              },
+              {
+                "name": "description",
+                "info": {
+                  "type": "text",
+                  "targetEntity": null,
+                  "inversedBy": null,
+                  "isPrimary": false
+                },
+                "validator": {},
+                "group": {
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
+                }
+              },
+              {
+                "name": "icon",
+                "info": {
+                  "type": "string",
+                  "targetEntity": null,
+                  "inversedBy": null,
+                  "isPrimary": false
+                },
+                "validator": {},
+                "group": {
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
+                }
+              },
+              {
+                "name": "properties",
+                "info": {
+                  "type": "many-to-many",
+                  "targetEntity": "Property",
+                  "inversedBy": "rules",
+                  "isPrimary": false
+                },
+                "validator": {},
+                "group": {
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
+                }
+              }
+            ],
+            "validator": {
+              "Cascade": null
+            },
+            "updatedAt": "09.05.2024, 21:31:00"
+          },
+          {
+            "name": "State",
+            "isEndpoint": true,
+            "group": [],
+            "column": [
+              {
+                "name": "id",
+                "info": {
+                  "type": "integer",
+                  "isPrimary": true,
+                  "targetEntity": null,
+                  "inversedBy": null
+                },
+                "validator": {},
+                "group": {
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
+                }
+              },
+              {
+                "name": "name",
+                "info": {
+                  "type": "string",
+                  "targetEntity": null,
+                  "inversedBy": null,
+                  "isPrimary": false
+                },
+                "validator": {},
+                "group": {
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
+                }
+              },
+              {
+                "name": "description",
+                "info": {
+                  "type": "text",
+                  "targetEntity": null,
+                  "inversedBy": null,
+                  "isPrimary": false
+                },
+                "validator": {},
+                "group": {
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
+                }
+              },
+              {
+                "name": "icon",
+                "info": {
+                  "type": "string",
+                  "targetEntity": null,
+                  "inversedBy": null,
+                  "isPrimary": false
+                },
+                "validator": {},
+                "group": {
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
+                }
+              },
+              {
+                "name": "properties",
+                "info": {
+                  "type": "one-to-many",
+                  "targetEntity": "Property",
+                  "mappedBy": "state"
+                },
+                "validator": {},
+                "group": {
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
+                }
+              }
+            ],
+            "validator": {
+              "Cascade": null
+            },
+            "updatedAt": "09.05.2024, 21:32:52"
+          },
+          {
+            "name": "Equipment",
+            "isEndpoint": true,
+            "group": [],
+            "column": [
+              {
+                "name": "id",
+                "info": {
+                  "type": "integer",
+                  "isPrimary": true,
+                  "targetEntity": null,
+                  "inversedBy": null
+                },
+                "validator": {},
+                "group": {
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
+                }
+              },
+              {
+                "name": "name",
+                "info": {
+                  "type": "string",
+                  "targetEntity": null,
+                  "inversedBy": null,
+                  "isPrimary": false
+                },
+                "validator": {},
+                "group": {
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
+                }
+              },
+              {
+                "name": "description",
+                "info": {
+                  "type": "text",
+                  "targetEntity": null,
+                  "inversedBy": null,
+                  "isPrimary": false
+                },
+                "validator": {},
+                "group": {
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
+                }
+              },
+              {
+                "name": "icon",
+                "info": {
+                  "type": "string",
+                  "targetEntity": null,
+                  "inversedBy": null,
+                  "isPrimary": false
+                },
+                "validator": {},
+                "group": {
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
+                }
+              },
+              {
+                "name": "properties",
+                "info": {
+                  "type": "many-to-many",
+                  "targetEntity": "Property",
+                  "inversedBy": "equipments",
+                  "isPrimary": false
+                },
+                "validator": {},
+                "group": {
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
+                }
+              }
+            ],
+            "validator": {
+              "Cascade": null
+            },
+            "updatedAt": "09.05.2024, 21:35:02"
+          },
+          {
+            "name": "File",
+            "isEndpoint": true,
+            "group": [],
+            "column": [
+              {
+                "name": "id",
+                "info": {
+                  "type": "integer",
+                  "isPrimary": true,
+                  "targetEntity": null,
+                  "inversedBy": null
+                },
+                "validator": {},
+                "group": {
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
+                }
+              },
+              {
+                "name": "url",
+                "info": {
+                  "type": "string",
+                  "targetEntity": null,
+                  "inversedBy": null,
+                  "isPrimary": false
+                },
+                "validator": {},
+                "group": {
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
+                }
+              },
+              {
+                "name": "type",
+                "info": {
+                  "type": "string",
+                  "targetEntity": null,
+                  "inversedBy": null,
+                  "isPrimary": false
+                },
+                "validator": {},
+                "group": {
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
+                }
+              },
+              {
+                "name": "property",
+                "info": {
+                  "type": "many-to-one",
+                  "targetEntity": "Property",
+                  "inversedBy": "files",
+                  "isPrimary": false
+                },
+                "validator": {},
+                "group": {
+                  "GET": [],
+                  "POST": [],
+                  "PUT": [],
+                  "DELETE": []
+                }
+              }
+            ],
+            "validator": {
+              "Cascade": null
+            },
+            "updatedAt": "09.05.2024, 21:39:59"
           }
         ]
       }

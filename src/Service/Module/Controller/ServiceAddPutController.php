@@ -31,7 +31,7 @@ class ServiceAddPutController implements ServiceAddControllerInterface
         $controllerClass->addAttribute('Tag', ['name' => $lowerNameModule]);
         $version = str_replace('.', '_', $data['version']);
         $path = (!empty($prefix) ? "/{$prefix}" : '').sprintf(
-                '/%s/%s/%s',
+                '/%s/%s/%s/{id<\d+>}',
                 $version,
                 $lowerNameModule,
                 $lowerNameEntity
@@ -39,12 +39,9 @@ class ServiceAddPutController implements ServiceAddControllerInterface
 
         $controllerClass->addConstant('ALLOW_GROUPS', preg_replace('/(\w+)/', 'PUT_$1', $data['group']));
         $entityClass = new Literal($entity.'::class');
-        $controllerGroups = new Literal($controllerName.'::ALLOW_GROUPS');
-        $controllerGetName = sprintf('%sGetController', ucfirst($data['entity_name']));;
-        $controllerGetGroups = new Literal($controllerGetName.'::ALLOW_GROUPS');
         $controllerClass->addAttribute('OA\RequestBody', [
             'content' => Literal::new('OA\JsonContent', [
-                'ref' => Literal::new('Model', ['type' => $entityClass, 'groups' => $controllerGroups])
+                'ref' => Literal::new('Model', ['type' => $entityClass, 'options' => ['method' => 'PUT']])
             ])
         ]);
         $controllerClass->addAttribute('OA\Response', [
@@ -60,7 +57,7 @@ class ServiceAddPutController implements ServiceAddControllerInterface
                             'property' => 'item',
                             'ref' => Literal::new(
                                 'Model',
-                                ['type' => $entityClass, 'groups' => $controllerGetGroups]
+                                ['type' => $entityClass, 'options' => ['method' => 'GET']]
                             ),
                         ]
                     ),
@@ -74,7 +71,18 @@ class ServiceAddPutController implements ServiceAddControllerInterface
                 'properties' => [
                     Literal::new('OA\Property', ['property' => 'message', 'type' => 'string', 'default' => 'Error message']),
                     Literal::new('OA\Property', ['property' => 'success', 'type' => 'boolean', 'default' => false]),
-                    Literal::new('OA\Property', ['property' => 'errors', 'type' => 'array', 'default' => []]),
+                    Literal::new('OA\Property', ['property' => 'errors', 'type' => 'object',
+                        'default' => [
+                            'name' => ['error text','error text 2']
+                        ],
+                        'additionalProperties' => Literal::new('OA\AdditionalProperties', [
+                            'type' => 'array',
+                            'items' => Literal::new('OA\Items', ['type' => 'string']),
+                            'default' => [
+                                'name' => ['error text','error text 2']
+                            ]
+                        ])
+                    ]),
                 ],
             ]),
         ]);
@@ -88,6 +96,10 @@ class ServiceAddPutController implements ServiceAddControllerInterface
                 ],
             ]),
         ]);
+        $controllerClass->addAttribute(
+            'OA\Parameter',
+            ['name' => 'id', 'in' => 'path', 'schema' => Literal::new('OA\Schema', ['type' => 'integer'])]
+        );
         $method = new Literal('Request::METHOD_PUT');
         $controllerClass->addAttribute('Route', ['path' => $path, 'methods' => [$method]]);
 
@@ -98,7 +110,9 @@ class ServiceAddPutController implements ServiceAddControllerInterface
 
         $body = '
 try {
-    $item = $service->update($request->getContent(), $request->get(\'id\'), self::ALLOW_GROUPS, CardGetController::ALLOW_GROUPS);
+    $putGroups = $service->getEntityGroups(\'PUT\');
+    $getGroups = $service->getEntityGroups(\'GET\');
+    $item = $service->update($request->getContent(), $request->get(\'id\'), $putGroups, $getGroups);
     
     return $this->json([
         \'message\' => \'ok\',
