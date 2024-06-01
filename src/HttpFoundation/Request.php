@@ -4,6 +4,8 @@ namespace Elenyum\Maker\HttpFoundation;
 
 use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 
+
+/** @todo это может быть полезно, если использовать везде, если доступно удаление или изменение по другому параметру */
 class Request extends SymfonyRequest
 {
     protected function getOffset(): ?int

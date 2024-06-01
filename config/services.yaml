@@ -87,3 +87,8 @@ services:
   Elenyum\Maker\Service\Module\ServiceDoctrineSchemaUpdate:
     arguments:
       $entityManagerProvider: '@doctrine.orm.command.entity_manager_provider'
+
+  Elenyum\Maker\Service\Module\ServiceShowModule:
+    arguments:
+      $registry: '@Doctrine\Common\Persistence\ManagerRegistry'
+      $options: '%elenyum_maker.config%'

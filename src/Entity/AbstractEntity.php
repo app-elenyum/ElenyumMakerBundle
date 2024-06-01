@@ -3,6 +3,7 @@
 namespace Elenyum\Maker\Entity;
 
 use DateTimeImmutable;
+use DateTimeInterface;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping\ManyToMany;
 use Doctrine\ORM\Mapping\ManyToOne;
@@ -53,10 +54,6 @@ abstract class AbstractEntity implements EntityToArrayInterface
             if (method_exists($this, $methodVal)) {
                 $val = $this->{$methodVal}();
 
-                if ($val instanceof DateTimeImmutable) {
-                    $val = $val->format(DATE_ATOM);
-                }
-
                 $pregForInput = $fields;
                 if (!empty($fields)) {
                     $pregForInput = preg_filter(sprintf('#^%s.#', $property->getName()), '', $fields);
@@ -68,8 +65,14 @@ abstract class AbstractEntity implements EntityToArrayInterface
                     foreach ($val as $item) {
                         $collection[] = $item->toArray($inputGroups, $pregForInput, $parents);
                     }
+
                     $result[$property->getName()] = $collection;
-                } elseif ((empty($fields) || !empty($pregForInput)) && class_exists($property->getType()->getName()) && $val !== null) {
+                } elseif ($val instanceof DateTimeInterface) {
+                    $val = $val->format(DATE_ATOM);
+
+                    $result[$property->getName()] = $val;
+                } elseif ((empty($fields) || !empty($pregForInput)) && $val instanceof EntityToArrayInterface) {
+
                     $parentName = $this->getParent($property);
                     $parents[] = $parentName;
                     $result[$property->getName()] = $val->toArray($inputGroups, $pregForInput, $parents);

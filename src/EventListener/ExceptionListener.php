@@ -14,7 +14,7 @@ class ExceptionListener
         $message = $exception->getMessage();
 
         // create json response and set the nice message from exception
-        $customResponse = new JsonResponse(['status' => false, 'message' => $message],417);
+        $customResponse = new JsonResponse(['success' => false, 'message' => $message],417);
 
         // set it as response and it will be sent
         $event->setResponse($customResponse);

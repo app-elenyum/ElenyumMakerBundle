@@ -26,6 +26,9 @@ class ServiceAddValidator implements ServiceAddToClassInterface
     private function addValidator(Property $property, array $validators)
     {
         foreach ($validators as $validator => $validatorParams) {
+//            if (is_string($validatorParams)) {
+//                $validatorParams = [$validatorParams];
+//            }
             $property->addAttribute('Assert\\' . $validator, $validatorParams ?? []);
         }
     }

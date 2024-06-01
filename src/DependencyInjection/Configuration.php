@@ -30,7 +30,6 @@ final class Configuration implements ConfigurationInterface
                     ->info('Root info for create files')
                     ->children()
                         ->scalarNode('path')
-                            ->defaultValue('module')
                             ->info('target path for create module')
                             ->isRequired()
                         ->end()
