@@ -34,7 +34,8 @@ class ServiceExecuteDoctrineUpdateConfig implements ServiceExecuteInterface
         $dirEntityFile = $path.'/'.$moduleName.'/'.$version.'/Entity';
 
         $configFile = $path.'/../config/packages/doctrine.yaml';
-        $config = new ConfigEditorService($configFile);
+
+        $config = $this->createConfigEditorService($configFile);
         $value = $config->parse();
 
         $key = ucfirst($moduleName).ucfirst($version);
@@ -50,7 +51,6 @@ class ServiceExecuteDoctrineUpdateConfig implements ServiceExecuteInterface
         ];
 
         $config->save($value);
-//        $metadataCache = new ArrayAdapter();
         return [
             [
                 'module' => $moduleName,
@@ -60,5 +60,16 @@ class ServiceExecuteDoctrineUpdateConfig implements ServiceExecuteInterface
                 'file' => $configFile,
             ],
         ];
+    }
+
+    public function createConfigEditorService(string $file): ?ConfigEditorService
+    {
+        $config = null;
+
+        if (file_exists($file)) {
+            $config = new ConfigEditorService($file);
+        }
+
+        return $config;
     }
 }
