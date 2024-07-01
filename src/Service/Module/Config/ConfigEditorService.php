@@ -1,6 +1,6 @@
 <?php
 
-namespace Elenyum\Maker\Service;
+namespace Elenyum\Maker\Service\Module\Config;
 
 use Symfony\Component\Yaml\Yaml;
 

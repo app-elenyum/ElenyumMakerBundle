@@ -2,7 +2,7 @@
 
 namespace Elenyum\Maker\Tests\Service\Module\Handler;
 
-use Elenyum\Maker\Service\ConfigEditorService;
+use Elenyum\Maker\Service\Module\Config\ConfigEditorService;
 use Elenyum\Maker\Service\Module\Handler\ServiceExecuteDoctrineUpdateConfig;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\OptionsResolver\Exception\MissingOptionsException;

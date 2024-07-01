@@ -2,8 +2,7 @@
 
 namespace Elenyum\Maker\Service\Module;
 
-use DateTimeImmutable;
-use DateTimeInterface;
+use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Registry;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Id;
@@ -11,8 +10,6 @@ use Doctrine\ORM\Mapping\ManyToMany;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\OneToOne;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
 use ReflectionClass;
 use ReflectionProperty;
 use Symfony\Component\Serializer\Attribute\Groups;
@@ -21,9 +18,9 @@ use Symfony\Component\OptionsResolver\Exception\MissingOptionsException;
 class ServiceShowModule
 {
     /**
-     * @var mixed|null
+     * @var string|null
      */
-    private mixed $path;
+    private ?string $path;
 
     public function __construct(
         public Registry $registry,
@@ -330,10 +327,11 @@ class ServiceShowModule
         if (!file_exists($path)) {
             return null; // Возвращаем null, если файл не существует
         }
-
+//1717759807
+//1717759807
         $lastModifiedTime = filemtime($path);
 
-        $date = new DateTimeImmutable();
+        $date = new DateTime();
         $date->setTimestamp($lastModifiedTime);
 
         return $date->format('Y-m-d H:i:s');

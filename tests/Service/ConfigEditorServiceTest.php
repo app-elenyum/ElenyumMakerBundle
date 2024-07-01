@@ -2,8 +2,8 @@
 
 namespace Elenyum\Maker\Tests\Service;
 
+use Elenyum\Maker\Service\Module\Config\ConfigEditorService;
 use PHPUnit\Framework\TestCase;
-use Elenyum\Maker\Service\ConfigEditorService;
 use Symfony\Component\Yaml\Yaml;
 
 class ConfigEditorServiceTest extends TestCase

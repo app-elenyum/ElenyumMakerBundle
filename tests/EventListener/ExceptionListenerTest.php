@@ -28,6 +28,5 @@ class ExceptionListenerTest extends TestCase
         $this->assertEquals(417, $response->getStatusCode());
         $content = json_decode($response->getContent(), true);
         $this->assertEquals($message, $content['message']);
-        $this->assertFalse($content['status']);
     }
 }

@@ -33,9 +33,10 @@ class ServiceDoctrineSchemaUpdate
     {
         $em = $this->getEntityManager();
 
-        $config = $this->getConfigs($paths);
-
-        $em = new EntityManager($em->getConnection(), $config);
+        if (!empty($paths)) {
+            $config = $this->getConfigs($paths);
+            $em = new EntityManager($em->getConnection(), $config);
+        }
 
         $metadatas = $em->getMetadataFactory()->getAllMetadata();
         $schemaTool = new SchemaTool($em);

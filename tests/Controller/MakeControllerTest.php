@@ -5,6 +5,7 @@ namespace Elenyum\Maker\Tests\Controller;
 use Doctrine\DBAL\Exception;
 use Elenyum\Maker\Controller\MakeController;
 use Elenyum\Maker\Service\Module\ServiceMakeModule;
+use Elenyum\Maker\Service\Module\ServiceShowModule;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -13,6 +14,7 @@ use Symfony\Component\HttpFoundation\Request;
 class MakeControllerTest extends WebTestCase
 {
     private $makeModule;
+    private $showModule;
     private $controller;
     private $request;
 
@@ -22,9 +24,10 @@ class MakeControllerTest extends WebTestCase
 
         // Mock the ServiceMakeModule dependency
         $this->makeModule = $this->createMock(ServiceMakeModule::class);
+        $this->showModule = $this->createMock(ServiceShowModule::class);
 
         // Create instance of MakeController
-        $this->controller = new MakeController($this->makeModule);
+        $this->controller = new MakeController($this->makeModule, $this->showModule);
 
         // Mock Request
         $this->request = $this->createMock(Request::class);
@@ -69,7 +72,7 @@ class MakeControllerTest extends WebTestCase
     public function testInvokeNotAllowedMethod(): void
     {
         // Assume GET request
-        $this->request->method('getMethod')->willReturn('GET');
+        $this->request->method('getMethod')->willReturn('PUT');
 
         // Perform the request to the controller
         $response = $this->controller->__invoke($this->request);
@@ -81,7 +84,7 @@ class MakeControllerTest extends WebTestCase
         $this->assertJson($content);
         $responseData = json_decode($content, true);
         $this->assertFalse($responseData['success']);
-        $this->assertEquals('Allow only POST method', $responseData['message']);
+        $this->assertEquals('Allow only POST or GET method', $responseData['message']);
     }
 
     public function testInvokeThrowsException(): void

@@ -77,9 +77,15 @@ services:
     arguments:
       $create: !tagged_iterator elenyum.make.handler.creator
 
+  Elenyum\Maker\Service\Module\ServiceBeforeMake:
+    arguments:
+      $options: '%elenyum_maker.config%'
+
   Elenyum\Maker\Service\Module\Handler\ServiceExecuteDoctrineUpdateConfig:
     tags:
       - { name: 'elenyum.make.handler.creator', priority: 50 }
+
+  Elenyum\Maker\Service\Module\Config\DoctrineConfig:
     arguments:
       #     @see ../src/DependencyInjection/ElenyumMakerExtension.php:19
       $options: '%elenyum_maker.config%'
