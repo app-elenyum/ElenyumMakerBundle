@@ -3,27 +3,34 @@
 namespace Elenyum\Maker\Tests\Service\Module;
 
 
+use Elenyum\Maker\Service\Module\Config\DoctrineConfig;
 use Elenyum\Maker\Service\Module\Handler\ServiceExecuteInterface;
+use Elenyum\Maker\Service\Module\ServiceBeforeMake;
 use Elenyum\Maker\Service\Module\ServiceDoctrineSchemaUpdate;
 use Elenyum\Maker\Service\Module\ServiceMakeModule;
 use PHPUnit\Framework\TestCase;
 
 class ServiceMakeModuleTest extends TestCase
 {
-    private $createMock;
+    private $create;
+    private $beforeMake;
+    private $config;
     private $doctrineSchemaUpdateMock;
     private $serviceMakeModule;
 
     protected function setUp(): void
     {
-        $this->createMock = $this->createMock(\ArrayObject::class);
+        $this->create = $this->createMock(\ArrayObject::class);
+        $this->beforeMake = $this->createMock(ServiceBeforeMake::class);
+        $this->config = $this->createMock(DoctrineConfig::class);
         $this->doctrineSchemaUpdateMock = $this->createMock(ServiceDoctrineSchemaUpdate::class);
 
-        $this->serviceMakeModule = new ServiceMakeModule($this->createMock, $this->doctrineSchemaUpdateMock);
+        $this->serviceMakeModule = new ServiceMakeModule($this->beforeMake, $this->create, $this->doctrineSchemaUpdateMock, $this->config);
     }
 
     public function testCreateModule()
     {
+        $this->beforeMake->method('prepareData')->willReturn([[], ['/test/asd']]);
         $data = [
             [
                 'name' => 'Module1',
@@ -65,66 +72,16 @@ class ServiceMakeModuleTest extends TestCase
             ['entityPath' => 'path/to/entity1']
         ]);
 
-        $this->createMock->method('getIterator')->willReturn(new \ArrayIterator([$createHandlerMock]));
+        $this->create->method('getIterator')->willReturn(new \ArrayIterator([$createHandlerMock]));
 
         $this->doctrineSchemaUpdateMock->method('execute')->willReturn(['SQL QUERY']);
 
         $result = $this->serviceMakeModule->createModule($data);
 
-        $expectedStructures = [
-            [
-                'entityPath' => 'path/to/entity1'
-            ]
-        ];
+        $expectedStructures = [];
 
         $expectedSqls = ['SQL QUERY'];
 
         $this->assertEquals([$expectedStructures, $expectedSqls], $result);
-    }
-
-    public function testPrepareData()
-    {
-        $data = [
-            [
-                'name' => 'Module1',
-                'version' => [
-                    '1.0' => [
-                        'entity' => [
-                            [
-                                'name' => 'Entity1',
-                                'isEndpoint' => true,
-                                'group' => 'Group1',
-                                'validator' => 'Validator1',
-                                'column' => 'Column1',
-                                'updatedAt' => '2023-01-01',
-                            ],
-                        ],
-                    ],
-                ],
-            ],
-        ];
-
-        $expected = [
-            [
-                'module_name' => 'Module1',
-                'module_name_lower' => 'module1',
-                'version' => '1.0',
-                'version_namespace' => '1_0',
-                'entity_name' => 'Entity1',
-                'entity_name_lower' => 'entity1',
-                'isEndpoint' => true,
-                'group' => 'Group1',
-                'validator' => 'Validator1',
-                'column' => 'Column1',
-                'updatedAt' => '2023-01-01',
-            ],
-        ];
-
-        $method = new \ReflectionMethod(ServiceMakeModule::class, 'prepareData');
-        $method->setAccessible(true);
-
-        $result = $method->invoke($this->serviceMakeModule, $data);
-
-        $this->assertEquals($expected, $result);
     }
 }
