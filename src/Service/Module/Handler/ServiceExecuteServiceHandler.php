@@ -90,7 +90,7 @@ class ServiceExecuteServiceHandler implements ServiceExecuteInterface
 
         $class->setExtends('ElenyumMakerBaseService');
         /** todo если в настройках включено множественное подключение то создаем его */
-        $class->addConstant('CONNECTION', $data['module_name_lower']);
+//        $class->addConstant('CONNECTION', $data['module_name_lower']);
         $constructor = $class->addMethod('__construct');
 
         $constructor->addParameter('repository')->setType($repositoryName);

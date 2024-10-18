@@ -51,6 +51,7 @@ class ServiceBeforeMake
                 $entityPaths[md5($entityPath)] = $entityPath;
 
                 foreach ($value['entity'] as $entity) {
+                    // Проверяем были ли обновления
                     if ((new DateTime($entity['updatedAt']))?->getTimestamp() === $this->getLastModifiedDate(
                             $name,
                             $version,
@@ -71,14 +72,35 @@ class ServiceBeforeMake
                         'isEndpoint' => $entity['isEndpoint'],
                         'group' => $entity['group'],
                         'validator' => $entity['validator'],
-                        'column' => $entity['column'],
-                        'updatedAt' => $entity['updatedAt']
+                        'column' => $this->prepareColumns($entity['column']),
+                        'updatedAt' => $entity['updatedAt'],
                     ];
                 }
             }
         }
 
         return [$dataResult, $entityPaths];
+    }
+
+    private function prepareColumns(array $columns): array
+    {
+        foreach ($columns as &$column) {
+            $column['camel_case_name'] = $this->snakeToCamelCase($column['name']);
+            $column['info']['camel_case_mapped_by'] = !empty($column['info']['mappedBy']) ? $this->snakeToCamelCase($column['info']['mappedBy']) : null;
+            $column['info']['camel_case_inversed_by'] = !empty($column['info']['inversedBy']) ? $this->snakeToCamelCase($column['info']['inversedBy']) : null;
+            $column['info']['camel_case_target_entity'] = !empty($column['info']['targetEntity']) ? $this->snakeToCamelCase($column['info']['targetEntity']) : null;
+        }
+
+        return $columns;
+    }
+
+    private function snakeToCamelCase(string $string): string
+    {
+        // Разбиваем строку по символу подчеркивания
+        $str = str_replace('_', '', ucwords($string, '_'));
+
+        // Приводим первый символ к нижнему регистру
+        return lcfirst($str);
     }
 
     public function collectForDelete(array $data): array
@@ -113,7 +135,7 @@ class ServiceBeforeMake
                         'version' => $version,
                         'operation' => 'delete',
                         'type' => $type,
-                        'file' => $path
+                        'file' => $path,
                     ];
                     continue;
                 }
@@ -127,7 +149,7 @@ class ServiceBeforeMake
                         'version' => $version,
                         'operation' => 'delete',
                         'type' => $type,
-                        'file' => $path
+                        'file' => $path,
                     ];
                     continue;
                 }

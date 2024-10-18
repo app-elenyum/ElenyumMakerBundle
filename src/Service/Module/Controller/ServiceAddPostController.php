@@ -25,6 +25,11 @@ class ServiceAddPostController implements ServiceAddControllerInterface
         $controllerClass = $namespace->addClass($controllerName);
         $controllerClass->setExtends('AbstractController');
 
+        if (class_exists('\Elenyum\Dashboard\Attribute\StatCountRequest')) {
+            $namespace->addUse('Elenyum\Dashboard\Attribute\StatCountRequest');
+            $controllerClass->addAttribute('StatCountRequest');
+        }
+
         $lowerNameModule = $data['module_name_lower'];
         $lowerNameEntity = $data['entity_name_lower'];
 

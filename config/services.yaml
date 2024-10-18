@@ -15,6 +15,9 @@ services:
       - '../src/DependencyInjection/'
       - '../src/ElenyumMakerBundle.php'
 
+  Elenyum\Maker\Serializer\CollectionDenormalizer:
+    tags: [ 'serializer.normalizer' ]
+
   Elenyum\Maker\EventListener\ExceptionListener:
     tags:
       - { name: kernel.event_listener, event: kernel.exception }
@@ -92,6 +95,8 @@ services:
 
   Elenyum\Maker\Service\Module\ServiceDoctrineSchemaUpdate:
     arguments:
+      #     @see ../src/DependencyInjection/ElenyumMakerExtension.php:19
+      $options: '%elenyum_maker.config%'
       $entityManagerProvider: '@doctrine.orm.command.entity_manager_provider'
 
   Elenyum\Maker\Service\Module\ServiceShowModule:

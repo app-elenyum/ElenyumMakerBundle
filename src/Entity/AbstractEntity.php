@@ -2,7 +2,6 @@
 
 namespace Elenyum\Maker\Entity;
 
-use DateTimeImmutable;
 use DateTimeInterface;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping\ManyToMany;
@@ -12,7 +11,7 @@ use Doctrine\ORM\Mapping\OneToOne;
 use Exception;
 use ReflectionClass;
 use ReflectionProperty;
-use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 abstract class AbstractEntity implements EntityToArrayInterface
 {

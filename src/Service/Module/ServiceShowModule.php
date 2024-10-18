@@ -6,6 +6,7 @@ use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Registry;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Id;
+use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\ManyToMany;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\OneToMany;
@@ -49,10 +50,17 @@ class ServiceShowModule
             foreach ($metas as $key => $meta) {
                 $item = [];
                 $reflectionClass = $meta->getReflectionClass();
-                $classNamespace = str_replace($rootNamespace.'\\', '', $reflectionClass->getName());
+
+                /** Если находится не в деректории с модулями то пропускаем */
+                if (!str_starts_with($reflectionClass->getFileName(), $this->path)) {
+                    continue;
+                }
+
+                    $classNamespace = str_replace($rootNamespace.'\\', '', $reflectionClass->getName());
 //                if (!empty($reflectionClass->getAttributes(NotEditable::class))) {
 //                    continue;
 //                }
+
                 $arrayNamespace = explode('\\', $classNamespace);
                 $moduleName = $arrayNamespace[0];
                 $dirVersion = $arrayNamespace[1];
@@ -120,8 +128,16 @@ class ServiceShowModule
          * @var ReflectionProperty $property
          */
         foreach ($reflectionClass->getProperties() as $propertyKey => $property) {
+            $columnAttribute = $property->getAttributes(Column::class);
+            $joinColumnAttribute = $property->getAttributes(JoinColumn::class);
+            $columnName = $property->getName();
+            if (isset($columnAttribute[0])) {
+                $columnName = $columnAttribute[0]->getArguments()['name'] ?? $property->getName();
+            } elseif (isset($joinColumnAttribute[0])) {
+                $columnName = $joinColumnAttribute[0]->getArguments()['name'] ?? $property->getName();
+            }
             $column = [
-                'name' => $property->getName(),
+                'name' => $columnName,
                 'info' => [
                     'type' => $this->getType($property),
                     'isPrimary' => $this->isPrimary($property),

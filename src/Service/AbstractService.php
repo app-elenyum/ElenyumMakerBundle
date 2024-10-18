@@ -136,7 +136,7 @@ abstract class AbstractService implements ServiceSubscriberInterface
         $serializer = $this->getSerializer();
         $context = [
             'groups' => array_unique(array_merge($groups, ['Default'])),
-            'allow_extra_attributes' => false,
+            'allow_extra_attributes' => false
         ];
 
         if ($entity !== null) {
@@ -186,8 +186,9 @@ abstract class AbstractService implements ServiceSubscriberInterface
     /**
      * @throws \ReflectionException
      */
-    public function getEntityGroups(?string $type = null): array
+    public function getEntityGroups(?string $type = null, ?UserInterface $user = null): array
     {
+        $result = ['Default'];
         $reflectionClass = new ReflectionClass($this->getRepository()->getClassName());
 
         $attributeGroups = $reflectionClass->getAttributes(Groups::class);
@@ -198,10 +199,16 @@ abstract class AbstractService implements ServiceSubscriberInterface
                 $groups = preg_replace('/(\w+)/', $type.'_$1', $groups);
             }
 
-            return array_merge($groups, ['Default']);
+            $result = array_merge($groups, $result);
+
+            if ($user !== null && $type !== null) {
+                $result = array_intersect($result, preg_replace('/(\w+)/', $type.'_$1', $user->getRoles()));
+            }
+
+            return $result;
         }
 
-        return [];
+        return $result;
     }
 
     /**

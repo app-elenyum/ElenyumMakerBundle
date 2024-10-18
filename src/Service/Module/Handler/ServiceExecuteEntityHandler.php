@@ -92,15 +92,9 @@ class ServiceExecuteEntityHandler implements ServiceExecuteInterface
             $class->addAttribute('Assert\\' . $validator, $validatorParams ?? []);
         }
 
-//        $class->addConstant('ALLOW_GROUPS', $data['group']);
-
         /** @var \Elenyum\Maker\Service\Module\Entity\ServiceAddToClassInterface $service */
         foreach ($this->entityServices as $service) {
-            if ($service instanceof SetFullNamespaceInterface) {
-                $service->setFullNamespace($fullNamespace);
-            }
-
-            $service->create($class, $data);
+            $service->create($namespace, $class, $data);
         }
 
         return $namespace;

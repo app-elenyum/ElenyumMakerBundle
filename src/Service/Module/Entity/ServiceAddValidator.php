@@ -3,11 +3,18 @@
 namespace Elenyum\Maker\Service\Module\Entity;
 
 use Nette\PhpGenerator\ClassType;
+use Nette\PhpGenerator\PhpNamespace;
 use Nette\PhpGenerator\Property;
 
 class ServiceAddValidator implements ServiceAddToClassInterface
 {
-    public function create(ClassType $class, array $data): ClassType
+    /**
+     * @param PhpNamespace $namespace
+     * @param ClassType $class
+     * @param array $data
+     * @return ClassType
+     */
+    public function create(PhpNamespace $namespace, ClassType $class, array $data): ClassType
     {
         $dataColumn = $data['column'];
         foreach ($dataColumn as $item) {
@@ -15,7 +22,7 @@ class ServiceAddValidator implements ServiceAddToClassInterface
                 continue;
             }
             $this->addValidator(
-                $class->getProperty(lcfirst($item['name'])),
+                $class->getProperty(lcfirst($item['camel_case_name'])),
                 $item['validator']
             );
         }

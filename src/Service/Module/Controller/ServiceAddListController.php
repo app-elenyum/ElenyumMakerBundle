@@ -24,6 +24,11 @@ class ServiceAddListController implements ServiceAddControllerInterface
         $controllerClass = $namespace->addClass($controllerName);
         $controllerClass->setExtends('AbstractController');
 
+        if (class_exists('\Elenyum\Dashboard\Attribute\StatCountRequest')) {
+            $namespace->addUse('Elenyum\Dashboard\Attribute\StatCountRequest');
+            $controllerClass->addAttribute('StatCountRequest');
+        }
+
         $lowerNameModule = $data['module_name_lower'];
         $lowerNameEntity = $data['entity_name_lower'];
 
@@ -87,6 +92,7 @@ class ServiceAddListController implements ServiceAddControllerInterface
         $controllerClass->addAttribute('OA\Parameter', ['name' => 'filter', 'in' => 'query', 'schema' => Literal::new('OA\Schema', ['type' => 'string']), 'example' => '{"name":"test"}']);
         $controllerClass->addAttribute('OA\Parameter', ['name' => 'orderBy', 'in' => 'query', 'schema' => Literal::new('OA\Schema', ['type' => 'string']), 'example' => '{"name":"desc"}']);
         $method = new Literal('Request::METHOD_GET');
+        /** @todo тут нужно добавлять атрибуты кастумные если они прописаны в настройках */
         $controllerClass->addAttribute('Route', ['path' => $path, 'methods' => [$method]]);
 
         $invoke = $controllerClass->addMethod('__invoke');
@@ -111,7 +117,7 @@ try {
         fields: json_decode($service->prepareJsonFormat($fields), true) ?? [],
     );
     return $this->json([
-        \'message\' => \'route to /elenyum/#/ if u need editor\',
+        \'message\' => \'success\',
         \'success\' => true,
         \'items\' => $items,
         \'paginator\' => [
