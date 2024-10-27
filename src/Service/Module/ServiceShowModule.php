@@ -47,7 +47,7 @@ class ServiceShowModule
         $rootNamespace = $this->options["root"]["namespace"];
         foreach ($managerNames as $connectionName => $connection) {
             $metas = $this->registry->getManager($connectionName)->getMetadataFactory()->getAllMetadata();
-            foreach ($metas as $key => $meta) {
+            foreach ($metas as $meta) {
                 $item = [];
                 $reflectionClass = $meta->getReflectionClass();
 
@@ -278,14 +278,13 @@ class ServiceShowModule
     private function getMappedBy(ReflectionProperty $property)
     {
         $result = null;
-        /** @var \ReflectionAttribute $oneToMany */
-        $oneToMany = $property->getAttributes(OneToMany::class)[0] ?? null;
+        /** @var \ReflectionAttribute $item */
+        $item = $property->getAttributes(OneToMany::class)[0] ?? $property->getAttributes(ManyToMany::class)[0] ?? null;
 
-        if ($oneToMany !== null) {
-            $mappedBy = $oneToMany?->getArguments()['mappedBy'] ?? null;
+        if ($item !== null) {
+            $mappedBy = $item?->getArguments()['mappedBy'] ?? null;
             if ($mappedBy !== null) {
-                $explode = explode('\\Entity\\', $mappedBy);
-                $result = end($explode);
+                $result = $mappedBy;
             }
         }
 

@@ -6,7 +6,7 @@ use Nette\PhpGenerator\Literal;
 use Nette\PhpGenerator\PhpNamespace;
 use Symfony\Component\HttpFoundation\Response;
 
-class ServiceAddListController implements ServiceAddControllerInterface
+class ServiceAddListController extends AbstractServiceController implements ServiceAddControllerInterface
 {
     public function createController(string $fullNamespace, string $service, string $entity, array $data, ?string $prefix): PhpNamespace
     {
@@ -23,6 +23,9 @@ class ServiceAddListController implements ServiceAddControllerInterface
         $controllerName = $this->getName($data['entity_name']);
         $controllerClass = $namespace->addClass($controllerName);
         $controllerClass->setExtends('AbstractController');
+        $entityClass = new Literal($entity.'::class');
+
+        $this->addAutAttribute($namespace, $entityClass, $controllerClass);
 
         if (class_exists('\Elenyum\Dashboard\Attribute\StatCountRequest')) {
             $namespace->addUse('Elenyum\Dashboard\Attribute\StatCountRequest');
@@ -41,7 +44,7 @@ class ServiceAddListController implements ServiceAddControllerInterface
                 $lowerNameEntity
             );
 
-        $entityClass = new Literal($entity.'::class');
+
         $controllerClass->addAttribute('OA\Response', [
             'response' => Response::HTTP_OK,
             'description' => 'Get list items',
@@ -107,7 +110,7 @@ try {
     $orderBy = $request->get(\'orderBy\', \'{}\');
     $filter = $request->get(\'filter\', \'{}\');
     $fields = $request->get(\'fields\', \'[]\');
-    $groups = $service->getEntityGroups(\'GET\');
+    $groups = $service->getEntityGroups(\'GET\', $this->getUser());
     [$total, $items] = $service->getList(
         offset: $offset,
         limit: $limit,

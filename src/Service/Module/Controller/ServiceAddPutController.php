@@ -6,7 +6,7 @@ use Nette\PhpGenerator\Literal;
 use Nette\PhpGenerator\PhpNamespace;
 use Symfony\Component\HttpFoundation\Response;
 
-class ServiceAddPutController implements ServiceAddControllerInterface
+class ServiceAddPutController extends AbstractServiceController implements ServiceAddControllerInterface
 {
     public function createController(string $fullNamespace, string $service, string $entity, array $data, ?string $prefix): PhpNamespace
     {
@@ -24,6 +24,9 @@ class ServiceAddPutController implements ServiceAddControllerInterface
         $controllerName = $this->getName($data['entity_name']);
         $controllerClass = $namespace->addClass($controllerName);
         $controllerClass->setExtends('AbstractController');
+        $entityClass = new Literal($entity.'::class');
+
+        $this->addAutAttribute($namespace, $entityClass, $controllerClass);
 
         if (class_exists('\Elenyum\Dashboard\Attribute\StatCountRequest')) {
             $namespace->addUse('Elenyum\Dashboard\Attribute\StatCountRequest');
@@ -43,7 +46,7 @@ class ServiceAddPutController implements ServiceAddControllerInterface
             );
 
         $controllerClass->addConstant('ALLOW_GROUPS', preg_replace('/(\w+)/', 'PUT_$1', $data['group']));
-        $entityClass = new Literal($entity.'::class');
+
         $controllerClass->addAttribute('OA\RequestBody', [
             'content' => Literal::new('OA\JsonContent', [
                 'ref' => Literal::new('Model', ['type' => $entityClass, 'options' => ['method' => 'PUT']])
@@ -115,8 +118,8 @@ class ServiceAddPutController implements ServiceAddControllerInterface
 
         $body = '
 try {
-    $putGroups = $service->getEntityGroups(\'PUT\');
-    $getGroups = $service->getEntityGroups(\'GET\');
+    $putGroups = $service->getEntityGroups(\'PUT\', $this->getUser());
+    $getGroups = $service->getEntityGroups(\'GET\', $this->getUser());
     $item = $service->update($request->getContent(), $request->get(\'id\'), $putGroups, $getGroups);
     
     return $this->json([

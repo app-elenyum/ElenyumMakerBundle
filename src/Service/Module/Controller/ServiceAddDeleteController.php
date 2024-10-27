@@ -6,7 +6,7 @@ use Nette\PhpGenerator\Literal;
 use Nette\PhpGenerator\PhpNamespace;
 use Symfony\Component\HttpFoundation\Response;
 
-class ServiceAddDeleteController implements ServiceAddControllerInterface
+class ServiceAddDeleteController extends AbstractServiceController implements ServiceAddControllerInterface
 {
     public function createController(string $fullNamespace, string $service, string $entity, array $data, ?string $prefix): PhpNamespace
     {
@@ -23,6 +23,9 @@ class ServiceAddDeleteController implements ServiceAddControllerInterface
         $controllerName = $this->getName($data['entity_name']);
         $controllerClass = $namespace->addClass($controllerName);
         $controllerClass->setExtends('AbstractController');
+        $entityClass = new Literal($entity.'::class');
+
+        $this->addAutAttribute($namespace, $entityClass, $controllerClass);
 
         if (class_exists('\Elenyum\Dashboard\Attribute\StatCountRequest')) {
             $namespace->addUse('Elenyum\Dashboard\Attribute\StatCountRequest');
@@ -41,7 +44,7 @@ class ServiceAddDeleteController implements ServiceAddControllerInterface
                 $lowerNameEntity
             );
 
-        $entityClass = new Literal($entity.'::class');
+
 
         $controllerClass->addAttribute(
             'OA\Parameter',
@@ -87,7 +90,7 @@ class ServiceAddDeleteController implements ServiceAddControllerInterface
 
         $body = '
 try {
-    $groups = $service->getEntityGroups(\'GET\');
+    $groups = $service->getEntityGroups(\'GET\', $this->getUser());
     $item = $service->delete($request->get(\'id\'), $groups);
 
     return $this->json([

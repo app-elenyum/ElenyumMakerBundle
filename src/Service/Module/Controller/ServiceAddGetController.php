@@ -6,7 +6,7 @@ use Nette\PhpGenerator\Literal;
 use Nette\PhpGenerator\PhpNamespace;
 use Symfony\Component\HttpFoundation\Response;
 
-class ServiceAddGetController implements ServiceAddControllerInterface
+class ServiceAddGetController extends AbstractServiceController implements ServiceAddControllerInterface
 {
     public function createController(string $fullNamespace, string $service, string $entity, array $data, ?string $prefix): PhpNamespace
     {
@@ -23,6 +23,9 @@ class ServiceAddGetController implements ServiceAddControllerInterface
         $controllerName = $this->getName($data['entity_name']);
         $controllerClass = $namespace->addClass($controllerName);
         $controllerClass->setExtends('AbstractController');
+        $entityClass = new Literal($entity.'::class');
+
+        $this->addAutAttribute($namespace, $entityClass, $controllerClass);
 
         if (class_exists('\Elenyum\Dashboard\Attribute\StatCountRequest')) {
             $namespace->addUse('Elenyum\Dashboard\Attribute\StatCountRequest');
@@ -41,7 +44,7 @@ class ServiceAddGetController implements ServiceAddControllerInterface
                 $lowerNameEntity
             );
 
-        $entityClass = new Literal($entity.'::class');
+
         $controllerClass->addAttribute('OA\Response', [
             'response' => Response::HTTP_OK,
             'description' => 'Get item by id',
@@ -86,7 +89,7 @@ class ServiceAddGetController implements ServiceAddControllerInterface
 
         $body = '
 try {
-    $groups = $service->getEntityGroups(\'GET\');
+    $groups = $service->getEntityGroups(\'GET\', $this->getUser());
     $item = $service->getOne($request->get(\'id\'), $groups);
      
     return $this->json([

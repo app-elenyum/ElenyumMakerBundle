@@ -59,6 +59,12 @@ final class Configuration implements ConfigurationInterface
         ->end()
         ->end()
 
+        // config for documentation open api generation
+        ->scalarNode('securityName')
+            ->info('default security name for generation open api documentation')
+            ->defaultValue('api_key')
+            ->end()
+
         // Doctrine Configuration
         ->arrayNode('doctrine')
         ->info('Doctrine settings allow skipping specific entity names or paths to optimize performance by excluding unnecessary data.')

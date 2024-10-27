@@ -6,7 +6,7 @@ use Nette\PhpGenerator\Literal;
 use Nette\PhpGenerator\PhpNamespace;
 use Symfony\Component\HttpFoundation\Response;
 
-class ServiceAddPostController implements ServiceAddControllerInterface
+class ServiceAddPostController extends AbstractServiceController implements ServiceAddControllerInterface
 {
     public function createController(string $fullNamespace, string $service, string $entity, array $data, ?string $prefix): PhpNamespace
     {
@@ -24,6 +24,9 @@ class ServiceAddPostController implements ServiceAddControllerInterface
         $controllerName = $this->getName($data['entity_name']);
         $controllerClass = $namespace->addClass($controllerName);
         $controllerClass->setExtends('AbstractController');
+        $entityClass = new Literal($entity.'::class');
+
+        $this->addAutAttribute($namespace, $entityClass, $controllerClass);
 
         if (class_exists('\Elenyum\Dashboard\Attribute\StatCountRequest')) {
             $namespace->addUse('Elenyum\Dashboard\Attribute\StatCountRequest');
@@ -43,7 +46,7 @@ class ServiceAddPostController implements ServiceAddControllerInterface
             );
 
         $controllerClass->addConstant('ALLOW_GROUPS', preg_replace('/(\w+)/', 'POST_$1', $data['group']));
-        $entityClass = new Literal($entity.'::class');
+
         $controllerClass->addAttribute('OA\RequestBody', [
             'content' => Literal::new('OA\JsonContent', [
                 'ref' => Literal::new('Model', ['type' => $entityClass, 'options' => ['method' => 'POST']])
@@ -108,8 +111,8 @@ class ServiceAddPostController implements ServiceAddControllerInterface
 
         $body = '
 try {
-    $postGroups = $service->getEntityGroups(\'POST\');
-    $getGroups = $service->getEntityGroups(\'GET\');
+    $postGroups = $service->getEntityGroups(\'POST\', $this->getUser());
+    $getGroups = $service->getEntityGroups(\'GET\', $this->getUser());
     $item = $service->add($request->getContent(), $postGroups, $getGroups);
     
     return $this->json([
