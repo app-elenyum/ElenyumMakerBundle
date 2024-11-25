@@ -103,3 +103,7 @@ services:
     arguments:
       $registry: '@Doctrine\Common\Persistence\ManagerRegistry'
       $options: '%elenyum_maker.config%'
+
+  Elenyum\Maker\Command\MakeCommand:
+    arguments:
+      $rootPath: '%kernel.project_dir%'
