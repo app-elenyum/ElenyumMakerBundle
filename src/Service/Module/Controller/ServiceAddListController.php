@@ -111,6 +111,12 @@ try {
     $filter = $request->get(\'filter\', \'{}\');
     $fields = $request->get(\'fields\', \'[]\');
     $groups = $service->getEntityGroups(\'GET\', $this->getUser());
+    $filter = is_array($filter) ? $filter :
+        (json_decode($service->prepareJsonFormat($filter), true) ?? []);
+    $fields = is_array($fields) ? $fields :
+        (json_decode($service->prepareJsonFormat($fields), true) ?? []);
+    $orderBy = is_array($orderBy) ? $orderBy :
+        (json_decode($service->prepareJsonFormat($orderBy), true) ?? []);
     [$total, $items] = $service->getList(
         offset: $offset,
         limit: $limit,
