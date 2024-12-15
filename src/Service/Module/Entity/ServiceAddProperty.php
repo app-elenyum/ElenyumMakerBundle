@@ -40,7 +40,7 @@ class ServiceAddProperty implements ServiceAddToClassInterface
             $this->addSetter($namespace, $class, $addProperty, $column);
             $this->addGetter($namespace, $class, $addProperty, $column);
 
-            }catch (Exception $e) {
+            } catch (Exception $e) {
                 dd($e->getMessage(), $e->getFile(), $e->getLine());
             }
         }
