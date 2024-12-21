@@ -120,10 +120,10 @@ try {
     [$total, $items] = $service->getList(
         offset: $offset,
         limit: $limit,
-        orderBy: json_decode($service->prepareJsonFormat($orderBy), true) ?? [],
+        orderBy: $orderBy,
         groups: $groups,
-        filter: json_decode($service->prepareJsonFormat($filter), true) ?? [],
-        fields: json_decode($service->prepareJsonFormat($fields), true) ?? [],
+        filter: $filter,
+        fields: $fields,
     );
     return $this->json([
         \'message\' => \'success\',

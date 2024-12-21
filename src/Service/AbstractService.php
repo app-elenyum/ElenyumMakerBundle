@@ -189,6 +189,7 @@ abstract class AbstractService implements ServiceSubscriberInterface
     public function getEntityGroups(?string $type = null, ?UserInterface $user = null): array
     {
         $result = [];
+        /** @var $reflectionClass - Get entity class name */
         $reflectionClass = new ReflectionClass($this->getRepository()->getClassName());
 
         $attributeGroups = $reflectionClass->getAttributes(Groups::class);
@@ -204,11 +205,9 @@ abstract class AbstractService implements ServiceSubscriberInterface
             if ($user !== null && $type !== null) {
                 $result = array_intersect($result, preg_replace('/(\w+)/', $type.'_$1', $user->getRoles()));
             }
-
-            return array_merge($result, ['Default']);
         }
 
-        return $result;
+        return array_merge($result, ['Default']);
     }
 
     /**
