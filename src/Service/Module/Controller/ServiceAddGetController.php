@@ -25,7 +25,10 @@ class ServiceAddGetController extends AbstractServiceController implements Servi
         $controllerClass->setExtends('AbstractController');
         $entityClass = new Literal($entity.'::class');
 
-        $this->addAutAttribute($namespace, $entityClass, $controllerClass);
+        /** Если нет ограничений для групп то не зачем добавлять авторизацию */
+        if (!empty($data['group'])) {
+            $this->addAutAttribute($namespace, $entityClass, $controllerClass);
+        }
 
         if (class_exists('\Elenyum\Dashboard\Attribute\StatCountRequest')) {
             $namespace->addUse('Elenyum\Dashboard\Attribute\StatCountRequest');
@@ -43,7 +46,6 @@ class ServiceAddGetController extends AbstractServiceController implements Servi
                 $lowerNameModule,
                 $lowerNameEntity
             );
-
 
         $controllerClass->addAttribute('OA\Response', [
             'response' => Response::HTTP_OK,
