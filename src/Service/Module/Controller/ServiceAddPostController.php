@@ -27,7 +27,7 @@ class ServiceAddPostController extends AbstractServiceController implements Serv
         $entityClass = new Literal($entity.'::class');
 
         /** Если нет ограничений для групп то не зачем добавлять авторизацию */
-        if (!empty($data['group'])) {
+        if (!empty($data['group']) || $this->hasRoles($data, 'POST')) {
             $this->addAutAttribute($namespace, $entityClass, $controllerClass);
         }
 
@@ -114,8 +114,8 @@ class ServiceAddPostController extends AbstractServiceController implements Serv
 
         $body = '
 try {
-    $postGroups = $service->getEntityGroups(\'POST\', $this->getUser());
-    $getGroups = $service->getEntityGroups(\'GET\', $this->getUser());
+    $postGroups = $service->getEntityGroups(\'POST\', $this->getUser(), [\'POST_public\']);
+    $getGroups = $service->getEntityGroups(\'GET\', $this->getUser(), [\'GET_public\']);
     $item = $service->add($request->getContent(), $postGroups, $getGroups);
     
     return $this->json([

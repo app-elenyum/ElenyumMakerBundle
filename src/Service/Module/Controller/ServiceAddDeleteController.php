@@ -26,7 +26,7 @@ class ServiceAddDeleteController extends AbstractServiceController implements Se
         $entityClass = new Literal($entity.'::class');
 
         /** Если нет ограничений для групп то не зачем добавлять авторизацию */
-        if (!empty($data['group'])) {
+        if (!empty($data['group']) || $this->hasRoles($data, 'DELETE')) {
             $this->addAutAttribute($namespace, $entityClass, $controllerClass);
         }
 
@@ -93,7 +93,7 @@ class ServiceAddDeleteController extends AbstractServiceController implements Se
 
         $body = '
 try {
-    $groups = $service->getEntityGroups(\'GET\', $this->getUser());
+    $groups = $service->getEntityGroups(\'GET\', $this->getUser(), [\'GET_public\']);
     $item = $service->delete($request->get(\'id\'), $groups);
 
     return $this->json([

@@ -218,6 +218,7 @@ class ElenyumMakerBaseService extends AbstractService
      */
     public function delete(int $id, array $groups = []): array
     {
+        /** @todo тут нужна проверка доступа */
         $entity = $this->getRepository()->findOneBy(['id' => $id]);
         if ($entity === null) {
             throw new NotFoundByIdException($id, $this->getRepository()->getClassName());
@@ -228,6 +229,7 @@ class ElenyumMakerBaseService extends AbstractService
         $result = $entity->toArray($groups);
 
         $this->getEntityManager()->remove($entity);
+        $this->getEntityManager()->flush();
 
         return $result;
     }

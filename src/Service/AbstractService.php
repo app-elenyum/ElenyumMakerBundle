@@ -136,7 +136,7 @@ abstract class AbstractService implements ServiceSubscriberInterface
         $serializer = $this->getSerializer();
         $context = [
             'groups' => array_unique(array_merge($groups, ['Default'])),
-            'allow_extra_attributes' => false
+            'allow_extra_attributes' => false,
         ];
 
         if ($entity !== null) {
@@ -184,30 +184,52 @@ abstract class AbstractService implements ServiceSubscriberInterface
     }
 
     /**
+     * @param string|null $type
+     * @param UserInterface|null $user
+     * @param array $addGroups
+     * @return array
      * @throws \ReflectionException
      */
-    public function getEntityGroups(?string $type = null, ?UserInterface $user = null): array
+    public function getEntityGroups(?string $type = null, ?UserInterface $user = null, array $addGroups = []): array
     {
         $result = [];
-        /** @var $reflectionClass - Get entity class name */
-        $reflectionClass = new ReflectionClass($this->getRepository()->getClassName());
-
-        $attributeGroups = $reflectionClass->getAttributes(Groups::class);
-        if (isset($attributeGroups[0]) && isset($attributeGroups[0]?->getArguments()[0])) {
-            $groups = $attributeGroups[0]->getArguments()[0];
-            if (!empty($groups) && $type !== null) {
-                $type = mb_strtoupper($type);
-                $groups = preg_replace('/(\w+)/', $type.'_$1', $groups);
-            }
-
+        if ($user !== null && $type !== null) {
+            $groups = $this->getGroupsFromAllProperties($this->getRepository()->getClassName());
             $result = array_merge($groups, $result);
+            $result = array_intersect($result, preg_replace('/(\w+)/', $type.'_$1', $user->getRoles()));
+        }
 
-            if ($user !== null && $type !== null) {
-                $result = array_intersect($result, preg_replace('/(\w+)/', $type.'_$1', $user->getRoles()));
+        return array_merge($result, ['Default'], $addGroups);
+    }
+
+    /**
+     * @param string $model
+     * @param string|null $method
+     * @return array
+     * @throws \ReflectionException
+     */
+    private function getGroupsFromAllProperties(string $model, ?string $method = null): array
+    {
+        $reflectionClass = new ReflectionClass($model);
+        $groups = [];
+
+        foreach ($reflectionClass->getProperties() as $property) {
+            $attributeGroups = $property->getAttributes(Groups::class);
+
+            if (!empty($attributeGroups)) {
+                $propertyGroups = array_map(fn($attr) => $attr->getArguments()[0] ?? [], $attributeGroups);
+                $flattenedGroups = array_merge(...$propertyGroups);
+
+                if ($method) {
+                    $filteredGroups = array_filter($flattenedGroups, fn($group) => str_starts_with($group, strtoupper($method) . '_'));
+                    $groups = array_merge($groups, $filteredGroups);
+                } else {
+                    $groups = array_merge($groups, $flattenedGroups);
+                }
             }
         }
 
-        return array_merge($result, ['Default']);
+        return array_unique($groups);
     }
 
     /**

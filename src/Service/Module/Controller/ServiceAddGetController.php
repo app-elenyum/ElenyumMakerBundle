@@ -26,7 +26,7 @@ class ServiceAddGetController extends AbstractServiceController implements Servi
         $entityClass = new Literal($entity.'::class');
 
         /** Если нет ограничений для групп то не зачем добавлять авторизацию */
-        if (!empty($data['group'])) {
+        if (!empty($data['group']) || $this->hasRoles($data, 'GET')) {
             $this->addAutAttribute($namespace, $entityClass, $controllerClass);
         }
 
@@ -91,7 +91,7 @@ class ServiceAddGetController extends AbstractServiceController implements Servi
 
         $body = '
 try {
-    $groups = $service->getEntityGroups(\'GET\', $this->getUser());
+    $groups = $service->getEntityGroups(\'GET\', $this->getUser(), [\'GET_public\']);
     $item = $service->getOne($request->get(\'id\'), $groups);
      
     return $this->json([

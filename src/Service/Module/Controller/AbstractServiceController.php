@@ -17,8 +17,7 @@ abstract class AbstractServiceController implements ServiceAddControllerInterfac
     public function __construct(
         #[Autowire('%elenyum_maker.config%')]
         private array $options
-    )
-    {
+    ) {
         $this->securityName = $this->options['securityName'] ?? null;
     }
 
@@ -27,7 +26,7 @@ abstract class AbstractServiceController implements ServiceAddControllerInterfac
         return $this->securityName;
     }
 
-    public function addAutAttribute(PhpNamespace $namespace, Literal $entityClass, ClassType $class)
+    public function addAutAttribute(PhpNamespace $namespace, Literal $entityClass, ClassType $class): void
     {
         if (class_exists(\Elenyum\Authorization\Attribute\Auth::class)) {
             $namespace->addUse('Elenyum\Authorization\Attribute\Auth');
@@ -37,5 +36,20 @@ abstract class AbstractServiceController implements ServiceAddControllerInterfac
             $params['model'] = $entityClass;
             $class->addAttribute('Auth', $params);
         }
+    }
+
+    public function hasRoles($data, $method = 'GET'): bool
+    {
+        if (empty($data['column'])) {
+            return false;
+        }
+
+        foreach ($data['column'] as $item) {
+            if (!empty($item['group'][$method])) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

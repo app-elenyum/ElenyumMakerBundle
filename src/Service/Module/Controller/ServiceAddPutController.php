@@ -27,7 +27,7 @@ class ServiceAddPutController extends AbstractServiceController implements Servi
         $entityClass = new Literal($entity.'::class');
 
         /** Если нет ограничений для групп то не зачем добавлять авторизацию */
-        if (!empty($data['group'])) {
+        if (!empty($data['group']) || $this->hasRoles($data, 'PUT')) {
             $this->addAutAttribute($namespace, $entityClass, $controllerClass);
         }
 
@@ -121,8 +121,8 @@ class ServiceAddPutController extends AbstractServiceController implements Servi
 
         $body = '
 try {
-    $putGroups = $service->getEntityGroups(\'PUT\', $this->getUser());
-    $getGroups = $service->getEntityGroups(\'GET\', $this->getUser());
+    $putGroups = $service->getEntityGroups(\'PUT\', $this->getUser(), [\'PUT_public\']);
+    $getGroups = $service->getEntityGroups(\'GET\', $this->getUser(), [\'GET_public\']);
     $item = $service->update($request->getContent(), $request->get(\'id\'), $putGroups, $getGroups);
     
     return $this->json([

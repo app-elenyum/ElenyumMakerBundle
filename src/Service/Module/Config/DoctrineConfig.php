@@ -2,6 +2,7 @@
 
 namespace Elenyum\Maker\Service\Module\Config;
 
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\OptionsResolver\Exception\MissingOptionsException;
 
 class DoctrineConfig extends AbstractConfig
@@ -27,9 +28,16 @@ class DoctrineConfig extends AbstractConfig
      */
     private ?string $namespace;
 
+    /**
+     * @var string
+     */
+    private string $projectDir;
+
     public function __construct(
+        ParameterBagInterface $params,
         private array $options
     ) {
+        $this->projectDir = $params->get('kernel.project_dir');
         $root = $this->options['root'] ?? null;
         if ($root === null) {
             throw new MissingOptionsException('Not defined "root" option');
@@ -54,7 +62,7 @@ class DoctrineConfig extends AbstractConfig
         $fullNamespace = ucfirst($this->namespace).'\\'.$moduleName.'\\'.ucfirst($version).'\\Entity';
 
         $dirEntityFile = $this->path.'/'.$moduleName.'/'.$version.'/Entity';
-
+        $dirEntityFile = str_replace($this->projectDir, '%kernel.project_dir%', $dirEntityFile);
 
         $key = ucfirst($moduleName).ucfirst($version);
 
