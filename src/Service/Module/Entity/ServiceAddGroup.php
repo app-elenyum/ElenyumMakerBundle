@@ -21,10 +21,11 @@ class ServiceAddGroup implements ServiceAddToClassInterface
             $class->addAttribute('Groups', [$data['group']]);
         }
         foreach ($dataColumn as $item) {
-            $groups = $this->prepareGroup($item['group']);
+            $groups = $this->prepareGroup($data['group'], $item['group']);
             if (empty($groups)) {
                 continue;
             }
+
             $this->addGroup(
                 $class->getProperty(lcfirst($item['camel_case_name'])),
                 $groups
@@ -45,16 +46,17 @@ class ServiceAddGroup implements ServiceAddToClassInterface
     }
 
     /**
+     * @param array $entityGroup
      * @param array $groups
-     * @return array
+     * @return array|string[]
      */
-    private function prepareGroup(array $groups): array
+    private function prepareGroup(array $entityGroup, array $groups): array
     {
         $result = [];
         foreach ($groups as $type => $group) {
             $result = array_merge($result, array_map(fn($g) => $type.'_'.$g, $group));
         }
 
-        return $result ?: ['Default'];
+        return !empty($entityGroup) ? $result : ['Default'];
     }
 }

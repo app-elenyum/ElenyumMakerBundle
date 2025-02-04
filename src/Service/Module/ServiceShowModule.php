@@ -56,11 +56,7 @@ class ServiceShowModule
                     continue;
                 }
 
-                    $classNamespace = str_replace($rootNamespace.'\\', '', $reflectionClass->getName());
-//                if (!empty($reflectionClass->getAttributes(NotEditable::class))) {
-//                    continue;
-//                }
-
+                $classNamespace = str_replace($rootNamespace.'\\', '', $reflectionClass->getName());
                 $arrayNamespace = explode('\\', $classNamespace);
                 $moduleName = $arrayNamespace[0];
                 $dirVersion = $arrayNamespace[1];
@@ -99,8 +95,9 @@ class ServiceShowModule
                         continue;
                     }
 
-                    // Разделяем строку на метод и роль
-                    list($method, $role) = explode('_', $group);
+                    // Разделяем строку на метод
+                    list($method) =  explode('_', $group);
+                    $role = preg_replace('/^(DELETE_|PUT_|POST_|GET_)/', '', $group);
 
                     if ($type === $method) {
                         // Добавляем роль в массив для метода, если ее еще нет
