@@ -103,7 +103,7 @@ class ElenyumMakerBaseService extends AbstractService
      * @throws OptimisticLockException
      * @throws NotFoundByIdException
      */
-    private function findOrPersist(object &$entity, bool $isInner = false): void
+    protected function findOrPersist(object &$entity, bool $isInner = false): void
     {
         $entityId = $entity->id ?? null;
         if ($isInner && $entityId !== null) {

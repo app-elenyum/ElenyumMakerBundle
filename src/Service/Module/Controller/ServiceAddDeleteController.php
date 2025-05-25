@@ -93,7 +93,7 @@ class ServiceAddDeleteController extends AbstractServiceController implements Se
 
         $body = '
 try {
-    $groups = $service->getEntityGroups(\'GET\', $this->getUser(), [\'GET_public\']);
+    $groups = $service->getEntityGroups(\'DELETE\', $this->getUser());
     $item = $service->delete($request->get(\'id\'), $groups);
 
     return $this->json([

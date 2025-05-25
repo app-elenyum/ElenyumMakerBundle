@@ -115,8 +115,8 @@ return $this;
         $getter = $class->addMethod('get'.ucfirst($propertyName));
 
         if ($phpType === 'Collection') {
-            $phpType = 'array';
-            $getter->addBody(sprintf('return $this->%s->toArray();', $propertyName));
+            $phpType = 'Collection';
+            $getter->addBody(sprintf('return $this->%s;', $propertyName));
         } else {
             $getter->addBody(sprintf('return $this->%s;', $propertyName));
         }

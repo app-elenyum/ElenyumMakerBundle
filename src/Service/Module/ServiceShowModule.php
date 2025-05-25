@@ -120,21 +120,14 @@ class ServiceShowModule
     private function getColumns(ReflectionClass $reflectionClass): array
     {
         $columns = [];
+
         /**
          * @var  $propertyKey
          * @var ReflectionProperty $property
          */
-        foreach ($reflectionClass->getProperties() as $propertyKey => $property) {
-            $columnAttribute = $property->getAttributes(Column::class);
-            $joinColumnAttribute = $property->getAttributes(JoinColumn::class);
-            $columnName = $property->getName();
-            if (isset($columnAttribute[0])) {
-                $columnName = $columnAttribute[0]->getArguments()['name'] ?? $property->getName();
-            } elseif (isset($joinColumnAttribute[0])) {
-                $columnName = $joinColumnAttribute[0]->getArguments()['name'] ?? $property->getName();
-            }
+        foreach ($reflectionClass->getProperties() as $property) {
             $column = [
-                'name' => $columnName,
+                'name' => $property->getName(),
                 'info' => [
                     'type' => $this->getType($property),
                     'isPrimary' => $this->isPrimary($property),
@@ -244,19 +237,19 @@ class ServiceShowModule
         $manyToMany = $property->getAttributes(ManyToMany::class)[0] ?? null;
 
         if ($manyToOne !== null) {
-            $inversedBy = $manyToMany?->getArguments()['inversedBy'] ?? null;
+            $inversedBy = $manyToOne?->getArguments()['inversedBy'] ?? null;
             if ($inversedBy !== null) {
                 $explode = explode('\\Entity\\', $inversedBy);
                 $result = end($explode);
             }
         } elseif ($oneToOne !== null) {
-            $inversedBy = $manyToMany?->getArguments()['inversedBy'] ?? null;
+            $inversedBy = $oneToOne?->getArguments()['inversedBy'] ?? null;
             if ($inversedBy !== null) {
                 $explode = explode('\\Entity\\', $inversedBy);
                 $result = end($explode);
             }
         } elseif ($oneToMany !== null) {
-            $inversedBy = $manyToMany?->getArguments()['inversedBy'] ?? null;
+            $inversedBy = $oneToMany?->getArguments()['inversedBy'] ?? null;
             if ($inversedBy !== null) {
                 $explode = explode('\\Entity\\', $inversedBy);
                 $result = end($explode);
@@ -339,8 +332,7 @@ class ServiceShowModule
         if (!file_exists($path)) {
             return null; // Возвращаем null, если файл не существует
         }
-//1717759807
-//1717759807
+
         $lastModifiedTime = filemtime($path);
 
         $date = new DateTime();

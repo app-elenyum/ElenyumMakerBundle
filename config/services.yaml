@@ -16,7 +16,20 @@ services:
       - '../src/ElenyumMakerBundle.php'
 
   Elenyum\Maker\Serializer\CollectionDenormalizer:
-    tags: [ 'serializer.normalizer' ]
+    tags:
+      - { name: serializer.normalizer, priority: 80 }
+
+  Elenyum\Maker\Serializer\EntityDenormalizer:
+    arguments:
+      - '@doctrine.orm.entity_manager'
+    tags:
+      - { name: serializer.normalizer, priority: 100 }
+
+  Elenyum\Maker\Serializer\XssDenormalizer:
+    calls:
+      - [setSerializer, ['@serializer']]
+    tags:
+      - { name: serializer.denormalizer, priority: 100 }
 
   Elenyum\Maker\EventListener\ExceptionListener:
     tags:
