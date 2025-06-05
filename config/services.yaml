@@ -25,12 +25,6 @@ services:
     tags:
       - { name: serializer.normalizer, priority: 100 }
 
-  Elenyum\Maker\Serializer\XssDenormalizer:
-    calls:
-      - [setSerializer, ['@serializer']]
-    tags:
-      - { name: serializer.denormalizer, priority: 100 }
-
   Elenyum\Maker\EventListener\ExceptionListener:
     tags:
       - { name: kernel.event_listener, event: kernel.exception }

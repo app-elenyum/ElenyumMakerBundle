@@ -27,6 +27,7 @@ use Symfony\Contracts\Service\ServiceSubscriberInterface;
 abstract class AbstractService implements ServiceSubscriberInterface
 {
     const CONNECTION = null;
+    const XSS_FILTER_ENABLE = true;
 
     protected ContainerInterface $container;
     protected EntityRepository $repository;
@@ -130,9 +131,14 @@ abstract class AbstractService implements ServiceSubscriberInterface
      * @param object|null $entity
      * @param array $groups
      * @return object
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
      */
     public function serializeDataToEntity(string $data, ?object $entity = null, array $groups = []): object
     {
+        if (self::XSS_FILTER_ENABLE) {
+            $data = $this->container->get(XssFilterService::class)->filterRequestContent($data);
+        }
         $serializer = $this->getSerializer();
         $context = [
             'groups' => array_unique(array_merge($groups, ['Default'])),
@@ -246,6 +252,7 @@ abstract class AbstractService implements ServiceSubscriberInterface
             'validator' => '?'.ValidatorInterface::class,
             'doctrine.orm.entity_manager' => '?'.EntityManagerInterface::class,
             ManagerRegistry::class => '?'.ManagerRegistry::class,
+            XssFilterService::class => '?'.XssFilterService::class
         ];
     }
 }
